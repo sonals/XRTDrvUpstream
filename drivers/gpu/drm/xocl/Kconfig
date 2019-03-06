@@ -1,0 +1,18 @@
+config DRM_XOCL
+	tristate "DRM Support for Xilinx PCIe Accelerator Alveo"
+	depends on DRM
+	depends on PCI
+	default n
+	help
+	  Choose this option if you have a Xilinx PCIe Accelerator
+	  card like Alveo or FaaS environments like AWS F1
+
+
+config DRM_XMGMT
+	tristate "DRM Support for Xilinx PCIe Accelerator Alveo"
+	depends on PCI
+	depends on FPGA
+	default n
+	help
+	  Choose this option if you have a Xilinx PCIe Accelerator
+	  card like Alveo
