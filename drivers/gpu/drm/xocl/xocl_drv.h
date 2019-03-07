@@ -37,19 +37,19 @@
 #endif
 /* UUID helper functions not present in older kernels */
 #if defined(XOCL_UUID)
-static inline bool uuid_equal(const xuid_t *u1, const xuid_t *u2)
+static inline bool uuid_equal(const uuid_t *u1, const xuid_t *u2)
 {
-	return memcmp(u1, u2, sizeof(xuid_t)) == 0;
+	return memcmp(u1, u2, sizeof(uuid_t)) == 0;
 }
 
-static inline void uuid_copy(xuid_t *dst, const xuid_t *src)
+static inline void uuid_copy(uuid_t *dst, const xuid_t *src)
 {
-	memcpy(dst, src, sizeof(xuid_t));
+	memcpy(dst, src, sizeof(uuid_t));
 }
 
-static inline bool uuid_is_null(const xuid_t *uuid)
+static inline bool uuid_is_null(const uuid_t *uuid)
 {
-	xuid_t uuid_null = NULL_UUID_LE;
+	uuid_t uuid_null = NULL_UUID_LE;
 	return uuid_equal(uuid, &uuid_null);
 }
 #endif
@@ -606,7 +606,7 @@ enum mb_cmd_type {
 };
 struct mailbox_req_bitstream_lock {
 	pid_t pid;
-	xuid_t uuid;
+	uuid_t uuid;
 };
 
 struct mailbox_subdev_peer {
@@ -688,9 +688,9 @@ struct xocl_icap_funcs {
 		unsigned int region, unsigned short *freqs, int num_freqs);
 	int (*ocl_update_clock_freq_topology)(struct platform_device *pdev, struct xclmgmt_ioc_freqscaling* freqs);
 	int (*ocl_lock_bitstream)(struct platform_device *pdev,
-		const xuid_t *uuid, pid_t pid);
+		const uuid_t *uuid, pid_t pid);
 	int (*ocl_unlock_bitstream)(struct platform_device *pdev,
-		const xuid_t *uuid, pid_t pid);
+		const uuid_t *uuid, pid_t pid);
 	uint64_t (*get_data)(struct platform_device *pdev,
 		enum data_kind kind);
 };

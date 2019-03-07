@@ -1,18 +1,11 @@
-/**
+// SPDX-License-Identifier: GPL-2.0
+
+/*
  *  Copyright (C) 2017 Xilinx, Inc. All rights reserved.
  *
  *  Thread to check sysmon/firewall status for errors/issues
  *  Author: Lizhi.Hou@Xilinx.com
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
  */
 
 #include <linux/kthread.h>
@@ -39,7 +32,7 @@ int health_thread_start(xdev_handle_t xdev)
 	core->health_thread = kthread_run(health_thread, &core->thread_arg,
 		"xocl_health_thread");
 
-	if(IS_ERR(core->health_thread)) {
+	if (IS_ERR(core->health_thread)) {
 		xocl_err(&core->pdev->dev, "ERROR! health thread init");
 		core->health_thread = NULL;
 		return -ENOMEM;
@@ -62,7 +55,7 @@ int health_thread_stop(xdev_handle_t xdev)
 	core->health_thread = NULL;
 
 	xocl_info(&core->pdev->dev, "fini_health_thread. ret = %d\n", ret);
-	if(ret != -EINTR) {
+	if (ret != -EINTR) {
 		xocl_err(&core->pdev->dev, "The health thread has terminated");
 		ret = 0;
 	}

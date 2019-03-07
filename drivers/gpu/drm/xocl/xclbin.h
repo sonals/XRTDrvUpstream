@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: GPL-2.0 OR Apache-2.0
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
 
-// Copyright (C) 2015-2019, Xilinx Inc
+/* Copyright (C) 2015-2019, Xilinx Inc */
 
 #ifndef _XCLBIN_H_
 #define _XCLBIN_H_
@@ -18,22 +18,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <uuid/uuid.h>
-#endif
-
-#if !defined(__KERNEL__)
-typedef uuid_t xuid_t;
-#else //(__KERNEL__)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
-typedef uuid_t xuid_t;
-#elif defined(RHEL_RELEASE_CODE)
-#if RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7,4)
-typedef uuid_t xuid_t;
-#else
-typedef uuid_le xuid_t;
-#endif
-#else
-typedef uuid_le xuid_t;
-#endif
 #endif
 
 #ifdef __cplusplus
@@ -144,7 +128,7 @@ extern "C" {
         unsigned char m_platformVBNV[64];   /* e.g. xilinx:xil-accel-rd-ku115:4ddr-xpr:3.4: null terminated */
 	union {
 	    char m_next_axlf[16];           /* Name of next xclbin file in the daisy chain */
-	    xuid_t uuid;                    /* uuid of this xclbin*/
+	    uuid_t uuid;                    /* uuid of this xclbin*/
 	};
         char m_debug_bin[16];               /* Name of binary with debug information */
         uint32_t m_numSections;             /* Number of section headers */

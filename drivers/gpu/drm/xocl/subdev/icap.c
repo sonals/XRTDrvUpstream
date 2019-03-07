@@ -35,7 +35,7 @@
 #include <drm/xmgmt_drm.h>
 
 #if defined(XOCL_UUID)
-static xuid_t uuid_null = NULL_UUID_LE;
+static uuid_t uuid_null = NULL_UUID_LE;
 #endif
 
 #define	ICAP_ERR(icap, fmt, arg...)	\
@@ -127,7 +127,7 @@ struct icap {
 	struct icap_axi_gate	*icap_axi_gate;
 
 	u64			icap_bitstream_id;
-	xuid_t			icap_bitstream_uuid;
+	uuid_t			icap_bitstream_uuid;
 	int			icap_bitstream_ref;
 	struct list_head	icap_bitstream_users;
 
@@ -1630,7 +1630,7 @@ free_buffers:
 }
 
 
-static int __icap_lock_peer(struct platform_device *pdev, const xuid_t *id)
+static int __icap_lock_peer(struct platform_device *pdev, const uuid_t *id)
 {
 	int err = 0;
 	struct icap *icap = platform_get_drvdata(pdev);
@@ -1674,7 +1674,7 @@ done:
 	return err;
 }
 
-static int __icap_unlock_peer(struct platform_device *pdev, const xuid_t *id)
+static int __icap_unlock_peer(struct platform_device *pdev, const uuid_t *id)
 {
 	int err = 0;
 	struct icap *icap = platform_get_drvdata(pdev);
@@ -1733,7 +1733,7 @@ static int icap_download_bitstream_axlf(struct platform_device *pdev,
 	int peer_connected;
 	struct mailbox_req *mb_req = NULL;
 	struct mailbox_bitstream_kaddr mb_addr = {0};
-	xuid_t peer_uuid;
+	uuid_t peer_uuid;
 
 	if (memcmp(xclbin->m_magic, ICAP_XCLBIN_V2, sizeof(ICAP_XCLBIN_V2)))
 		return -EINVAL;
@@ -1873,7 +1873,7 @@ static int icap_download_bitstream_axlf(struct platform_device *pdev,
 			}
 		}
 
-		icap_read_from_peer(pdev, XCLBIN_UUID, &peer_uuid, sizeof(xuid_t));
+		icap_read_from_peer(pdev, XCLBIN_UUID, &peer_uuid, sizeof(uuid_t));
 
 		if(!uuid_equal(&peer_uuid, &xclbin->m_header.uuid)){
 			/*
@@ -2173,7 +2173,7 @@ static int icap_reset_bitstream(struct platform_device *pdev)
 	return 0;
 }
 
-static int icap_lock_bitstream(struct platform_device *pdev, const xuid_t *id,
+static int icap_lock_bitstream(struct platform_device *pdev, const uuid_t *id,
 	pid_t pid)
 {
 	struct icap *icap = platform_get_drvdata(pdev);
@@ -2214,7 +2214,7 @@ done:
 	return err;
 }
 
-static int icap_unlock_bitstream(struct platform_device *pdev, const xuid_t *id,
+static int icap_unlock_bitstream(struct platform_device *pdev, const uuid_t *id,
 	pid_t pid)
 {
 	struct icap *icap = platform_get_drvdata(pdev);
@@ -2447,7 +2447,7 @@ static ssize_t icap_rl_program(struct file *filp, struct kobject *kobj,
 		/* has to reset pci, otherwise firewall trips */
 		xocl_reset(xocl_get_xdev(icap->icap_pdev));
 		icap->icap_bitstream_id = 0;
-		memset(&icap->icap_bitstream_uuid, 0, sizeof(xuid_t));
+		memset(&icap->icap_bitstream_uuid, 0, sizeof(uuid_t));
 		vfree(icap->bit_buffer);
 		icap->bit_buffer = NULL;
 	} else {

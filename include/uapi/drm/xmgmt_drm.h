@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0 OR Apache-2.0
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
 
 /**
  * DOC: PCIe Kernel Driver for Managament Physical Function
@@ -30,34 +30,34 @@
  *
  * @XCL_FW_MGMT_CONTROL:  MGMT BAR AXI-Lite BAR access protection
  * @XCL_FW_USER_CONTROL:  USER BAR AXI-Lite BAR access protection
- * @XCL_FW_DATAPATH:      DMA data path protection
+ * @XCL_FW_DATAPATH:	  DMA data path protection
  */
 enum xclFirewallID {
-        XCL_FW_MGMT_CONTROL = 0,
-        XCL_FW_USER_CONTROL,
-        XCL_FW_DATAPATH,
-        XCL_FW_MAX_LEVEL // always the last one
+	XCL_FW_MGMT_CONTROL = 0,
+	XCL_FW_USER_CONTROL,
+	XCL_FW_DATAPATH,
+	XCL_FW_MAX_LEVEL // always the last one
 };
 
 /**
  * struct xclAXIErrorStatus - Record used to capture specific error
  *
- * @mErrFirewallTime:    Timestamp of when Firewall tripped
- * @mErrFirewallStatus:  Error code obtained from the Firewall
- * @mErrFirewallID:      Firewall ID
+ * @mErrFirewallTime:	 Timestamp of when Firewall tripped
+ * @mErrFirewallStatus:	 Error code obtained from the Firewall
+ * @mErrFirewallID:	 Firewall ID
  */
 struct xclAXIErrorStatus {
-        unsigned long       mErrFirewallTime;
-        unsigned            mErrFirewallStatus;
-        enum xclFirewallID  mErrFirewallID;
+	unsigned int long   mErrFirewallTime;
+	unsigned int	    mErrFirewallStatus;
+	enum xclFirewallID  mErrFirewallID;
 };
 
 struct xclPCIErrorStatus {
-        unsigned mDeviceStatus;
-        unsigned mUncorrErrStatus;
-        unsigned mCorrErrStatus;
-        unsigned rsvd1;
-        unsigned rsvd2;
+	unsigned int mDeviceStatus;
+	unsigned int mUncorrErrStatus;
+	unsigned int mCorrErrStatus;
+	unsigned int rsvd1;
+	unsigned int rsvd2;
 };
 
 /**
@@ -68,17 +68,17 @@ struct xclPCIErrorStatus {
  * @mPCIErrorStatus:  Unused
  */
 struct xclErrorStatus {
-        unsigned  mNumFirewalls;
-        struct xclAXIErrorStatus mAXIErrorStatus[8];
-        struct xclPCIErrorStatus mPCIErrorStatus;
-        unsigned mFirewallLevel;
+	unsigned int mNumFirewalls;
+	struct xclAXIErrorStatus mAXIErrorStatus[8];
+	struct xclPCIErrorStatus mPCIErrorStatus;
+	unsigned int mFirewallLevel;
 };
 
 #define XCLMGMT_IOC_MAGIC	'X'
 #define XCLMGMT_NUM_SUPPORTED_CLOCKS 4
 #define XCLMGMT_NUM_ACTUAL_CLOCKS 2
 #define XCLMGMT_NUM_FIREWALL_IPS 3
-#define AWS_SHELL14             69605400
+#define AWS_SHELL14		69605400
 
 #define AXI_FIREWALL
 
@@ -105,8 +105,8 @@ struct xclmgmt_ioc_info {
 	unsigned short device;
 	unsigned short subsystem_vendor;
 	unsigned short subsystem_device;
-	unsigned driver_version;
-	unsigned device_version;
+	unsigned int driver_version;
+	unsigned int device_version;
 	unsigned long long feature_id;
 	unsigned long long time_stamp;
 	unsigned short ddr_channel_num;
@@ -125,7 +125,7 @@ struct xclmgmt_ioc_info {
 	bool mig_calibration[4];
 	unsigned short num_clocks;
 	bool isXPR;
-	unsigned pci_slot;
+	unsigned int pci_slot;
 	unsigned long long xmc_version;
 	unsigned short twelve_vol_pex;
 	unsigned short twelve_vol_aux;
@@ -148,7 +148,7 @@ struct xclmgmt_ioc_info {
 };
 
 struct xclmgmt_ioc_bitstream {
-	//struct xclBin *xclbin;
+	struct xclBin *xclbin;
 };
 
 
@@ -159,9 +159,9 @@ struct xclmgmt_ioc_bitstream {
  * Note that this structure will be obsoleted in future and the same functionality will be exposed via sysfs nodes
  */
 struct xclmgmt_err_info {
-        unsigned mNumFirewalls;
-        struct xclAXIErrorStatus mAXIErrorStatus[8];
-        struct xclPCIErrorStatus mPCIErrorStatus;
+	unsigned int mNumFirewalls;
+	struct xclAXIErrorStatus mAXIErrorStatus[8];
+	struct xclPCIErrorStatus mPCIErrorStatus;
 };
 
 /**
@@ -178,22 +178,26 @@ struct xclmgmt_ioc_bitstream_axlf {
  * struct xclmgmt_ioc_freqscaling - scale frequencies on the board using Xilinx clock wizard
  * used with XCLMGMT_IOCFREQSCALE ioctl
  *
- * @ocl_region:	        PR region (currently only 0 is supported)
+ * @ocl_region:		PR region (currently only 0 is supported)
  * @ocl_target_freq:	Array of requested frequencies, a value o zero in the array indicates leave untouched
  */
 struct xclmgmt_ioc_freqscaling {
-	unsigned ocl_region;
+	unsigned int ocl_region;
 	unsigned short ocl_target_freq[XCLMGMT_NUM_SUPPORTED_CLOCKS];
 };
 
-#define XCLMGMT_IOCINFO		  _IOR (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_INFO,		 struct xclmgmt_ioc_info)
-#define XCLMGMT_IOCICAPDOWNLOAD	  _IOW (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_ICAP_DOWNLOAD,	 struct xclmgmt_ioc_bitstream)
-#define XCLMGMT_IOCICAPDOWNLOAD_AXLF	 _IOW(XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_ICAP_DOWNLOAD_AXLF,	 struct xclmgmt_ioc_bitstream_axlf)
-#define XCLMGMT_IOCFREQSCALE      _IOW (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_FREQ_SCALE,	 struct xclmgmt_ioc_freqscaling)
-#define XCLMGMT_IOCHOTRESET       _IO  (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_HOT_RESET)
-#define XCLMGMT_IOCOCLRESET       _IO  (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_OCL_RESET)
-#define XCLMGMT_IOCREBOOT         _IO  (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_REBOOT)
-#define XCLMGMT_IOCERRINFO	  _IOR (XCLMGMT_IOC_MAGIC,XCLMGMT_IOC_ERR_INFO, struct xclErrorStatus)
+#define XCLMGMT_IOCINFO			 _IOR(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_INFO, \
+					      struct xclmgmt_ioc_info)
+#define XCLMGMT_IOCICAPDOWNLOAD		 _IOW(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_ICAP_DOWNLOAD, \
+					      struct xclmgmt_ioc_bitstream)
+#define XCLMGMT_IOCICAPDOWNLOAD_AXLF	 _IOW(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_ICAP_DOWNLOAD_AXLF, \
+					      struct xclmgmt_ioc_bitstream_axlf)
+#define XCLMGMT_IOCFREQSCALE		 _IOW(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_FREQ_SCALE, \
+					      struct xclmgmt_ioc_freqscaling)
+#define XCLMGMT_IOCHOTRESET		 _IO(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_HOT_RESET)
+#define XCLMGMT_IOCOCLRESET		 _IO(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_OCL_RESET)
+#define XCLMGMT_IOCREBOOT		 _IO(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_REBOOT)
+#define XCLMGMT_IOCERRINFO		 _IOR(XCLMGMT_IOC_MAGIC, XCLMGMT_IOC_ERR_INFO, struct xclErrorStatus)
 
 #define	XCLMGMT_MB_HWMON_NAME	    "xclmgmt_microblaze"
 #define XCLMGMT_SYSMON_HWMON_NAME   "xclmgmt_sysmon"

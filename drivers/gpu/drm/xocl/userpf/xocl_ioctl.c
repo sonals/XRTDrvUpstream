@@ -31,7 +31,7 @@
 #include "common.h"
 
 #if defined(XOCL_UUID)
-xuid_t uuid_null = NULL_UUID_LE;
+uuid_t uuid_null = NULL_UUID_LE;
 #endif
 
 int xocl_info_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
@@ -213,7 +213,7 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 	int preserve_mem = 0;
 	struct mem_topology *new_topology, *topology;
 	struct xocl_dev *xdev = drm_p->xdev;
-	xuid_t *xclbin_id;
+	uuid_t *xclbin_id;
 
 	userpf_info(xdev, "READ_AXLF IOCTL\n");
 
@@ -236,7 +236,7 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 		memcpy(&bin_obj.m_header.uuid, &bin_obj.m_header.m_timeStamp, 8);
 	}
 
-	xclbin_id = (xuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
+	xclbin_id = (uuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
 	if (!xclbin_id)
 		return -EINVAL;
 	/*
@@ -356,7 +356,7 @@ int xocl_read_axlf_ioctl(struct drm_device *dev,
 	struct xocl_dev *xdev = drm_p->xdev;
 	struct client_ctx *client = filp->driver_priv;
 	int err = 0;
-	xuid_t *xclbin_id;
+	uuid_t *xclbin_id;
 
 	mutex_lock(&xdev->ctx_list_lock);
 	err = xocl_read_axlf_helper(drm_p, axlf_obj_ptr);
@@ -366,7 +366,7 @@ int xocl_read_axlf_ioctl(struct drm_device *dev,
 	 * when a lock is eventually acquired it can be verified to be against to
 	 * be a lock on expected xclbin
 	 */
-	xclbin_id = (xuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
+	xclbin_id = (uuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
 	uuid_copy(&client->xclbin_id,
 			((err || !xclbin_id) ? &uuid_null : xclbin_id));
 	mutex_unlock(&xdev->ctx_list_lock);

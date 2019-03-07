@@ -1,16 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
- * Copyright (C) 2018 Xilinx, Inc. All rights reserved.
+ * Copyright (C) 2018-2019 Xilinx, Inc. All rights reserved.
  *
  * Authors: Lizhi.Hou@xilinx.com
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/pci.h>
@@ -55,8 +49,7 @@ void *xocl_drvinst_alloc(struct device *dev, u32 size)
 failed:
 	mutex_unlock(&xocl_drvinst_lock);
 
-	if (drvinstp)
-		kfree(drvinstp);
+	kfree(drvinstp);
 	return NULL;
 }
 
@@ -94,7 +87,7 @@ void xocl_drvinst_free(void *data)
 					continue;
 				ret = kill_pid(p, SIGBUS, 1);
 				if (ret)
-					xocl_err(drvinstp->dev, 
+					xocl_err(drvinstp->dev,
 						"kill %d failed",
 						proc->pid);
 				put_pid(p);

@@ -960,7 +960,7 @@ struct exec_core {
 
 	struct xocl_scheduler      *scheduler;
 
-	xuid_t                     xclbin_id;
+	uuid_t                     xclbin_id;
 
         unsigned int               num_slots;
         unsigned int               num_cus;
@@ -1174,11 +1174,11 @@ static void
 exec_reset(struct exec_core *exec)
 {
 	struct xocl_dev *xdev = exec_get_xdev(exec);
-	xuid_t *xclbin_id;
+	uuid_t *xclbin_id;
 
 	mutex_lock(&exec->exec_lock);
 
-	xclbin_id = (xuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
+	xclbin_id = (uuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
 
 	userpf_info(xdev,"exec_reset(%d) cfg(%d)\n",exec->uid,exec->configured);
 
@@ -2291,12 +2291,12 @@ static int
 xocl_client_lock_bitstream_nolock(struct xocl_dev *xdev, struct client_ctx *client)
 {
 	int pid = pid_nr(task_tgid(current));
-	xuid_t *xclbin_id;
+	uuid_t *xclbin_id;
 
 	if (client->xclbin_locked)
 		return 0;
 
-	xclbin_id = (xuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
+	xclbin_id = (uuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
 	if (!xclbin_id || !uuid_equal(xclbin_id, &client->xclbin_id)) {
 		userpf_err(xdev, "device xclbin does not match context xclbin, "
 			"cannot obtain lock for process %d", pid);
@@ -2470,11 +2470,11 @@ static int client_ioctl_ctx(struct platform_device *pdev,
 	int pid = pid_nr(task_tgid(current));
 	struct xocl_dev	*xdev = xocl_get_xdev(pdev);
 	struct exec_core *exec = platform_get_drvdata(pdev);
-	xuid_t *xclbin_id;
+	uuid_t *xclbin_id;
 
 	mutex_lock(&client->lock);
 	mutex_lock(&xdev->ctx_list_lock);
-	xclbin_id = (xuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
+	xclbin_id = (uuid_t *)xocl_icap_get_data(xdev, XCLBIN_UUID);
 	if (!xclbin_id || !uuid_equal(xclbin_id, &args->xclbin_id)) {
 		ret = -EBUSY;
 		goto out;

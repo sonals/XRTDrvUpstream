@@ -1,16 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * Copyright (C) 2018 Xilinx, Inc. All rights reserved.
  *
  * Authors:
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/pci.h>
@@ -66,14 +60,14 @@ static struct platform_device *xocl_register_subdev(xdev_handle_t xdev_hdl,
 	iostart = pci_resource_start(core->pdev, core->bar_idx);
 
 	if (sdev_info->num_res > 0) {
-		res = devm_kzalloc(&pldev->dev, sizeof (*res) *
+		res = devm_kzalloc(&pldev->dev, sizeof(*res) *
 			sdev_info->num_res, GFP_KERNEL);
 		if (!res) {
 			xocl_err(&pldev->dev, "out of memory");
 			retval = -ENOMEM;
 			goto error;
 		}
-		memcpy(res, sdev_info->res, sizeof (*res) * sdev_info->num_res);
+		memcpy(res, sdev_info->res, sizeof(*res) * sdev_info->num_res);
 
 		for (i = 0; i < sdev_info->num_res; i++) {
 			if (sdev_info->res[i].flags & IORESOURCE_MEM) {
@@ -124,18 +118,18 @@ error:
 int xocl_subdev_get_devinfo(uint32_t subdev_id,
 	struct xocl_subdev_info *info, struct resource *res)
 {
-	switch(subdev_id) {
-		case XOCL_SUBDEV_DNA:
-			*info = (struct xocl_subdev_info)XOCL_DEVINFO_DNA;
-			break;
-		case XOCL_SUBDEV_MIG:
-			*info = (struct xocl_subdev_info)XOCL_DEVINFO_MIG;
-			break;
-		default:
-			return -ENODEV;
+	switch (subdev_id) {
+	case XOCL_SUBDEV_DNA:
+		*info = (struct xocl_subdev_info)XOCL_DEVINFO_DNA;
+		break;
+	case XOCL_SUBDEV_MIG:
+		*info = (struct xocl_subdev_info)XOCL_DEVINFO_MIG;
+		break;
+	default:
+		return -ENODEV;
 	}
 	/* Only support retrieving subdev info with 1 base address and no irq */
-	if(info->num_res > 1)
+	if (info->num_res > 1)
 		return -EINVAL;
 	*res = *info->res;
 	info->res = res;
@@ -222,7 +216,7 @@ int xocl_subdev_create_by_name(xdev_handle_t xdev_hdl, char *name)
 	if (i == core->priv.subdev_num)
 		return -ENODEV;
 
-	return xocl_subdev_create_one(xdev_hdl, 
+	return xocl_subdev_create_one(xdev_hdl,
 			&core->priv.subdev_info[i]);
 }
 
@@ -257,7 +251,7 @@ int xocl_subdev_create_by_id(xdev_handle_t xdev_hdl, int id)
 	if (i == core->priv.subdev_num)
 		return -ENOENT;
 
-	return xocl_subdev_create_one(xdev_hdl, 
+	return xocl_subdev_create_one(xdev_hdl,
 			&core->priv.subdev_info[i]);
 }
 
@@ -317,7 +311,7 @@ void xocl_subdev_destroy_one(xdev_handle_t xdev_hdl, uint32_t subdev_id)
 {
 	struct xocl_dev_core *core = (struct xocl_dev_core *)xdev_hdl;
 
-	if (subdev_id==INVALID_SUBDEVICE)
+	if (subdev_id == INVALID_SUBDEVICE)
 		return;
 	if (core->subdevs[subdev_id].pldev) {
 		device_release_driver(&core->subdevs[subdev_id].pldev->dev);
@@ -420,9 +414,8 @@ void xocl_subdev_destroy_all(xdev_handle_t xdev_hdl)
 	xocl_subdev_destroy_common(xdev_hdl,
 		match_multi_inst_subdevs, &subdevs);
 
-	for (i = ARRAY_SIZE(core->subdevs) - 1; i >= 0; i--) {
+	for (i = ARRAY_SIZE(core->subdevs) - 1; i >= 0; i--)
 		xocl_subdev_destroy_one(xdev_hdl, i);
-	}
 
 	core->subdev_num = 0;
 }
@@ -456,12 +449,12 @@ void xocl_fill_dsa_priv(xdev_handle_t xdev_hdl, struct xocl_board_private *in)
 
 	memset(&core->priv, 0, sizeof(core->priv));
 	/*
- 	 * follow xilinx device id, subsystem id codeing rules to set dsa
+	 * follow xilinx device id, subsystem id codeing rules to set dsa
 	 * private data. And they can be overwrited in subdev header file
 	 */
-	if ((pdev->device >> 5) & 0x1) {
+	if ((pdev->device >> 5) & 0x1)
 		core->priv.xpr = true;
-	}
+
 	core->priv.dsa_ver = pdev->subsystem_device & 0xff;
 
 	/* data defined in subdev header */

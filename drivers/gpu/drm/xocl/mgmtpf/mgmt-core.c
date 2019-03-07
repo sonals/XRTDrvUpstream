@@ -576,7 +576,7 @@ static int xclmgmt_read_subdev_req(struct xclmgmt_dev *lro, char *data_ptr, void
 			break;
 		case XCLBIN_UUID:
 			ptr = (void *)xocl_icap_get_data(lro, subdev_req->kind);
-			resp_sz = sizeof(xuid_t);
+			resp_sz = sizeof(uuid_t);
 			break;
 		default:
 			break;

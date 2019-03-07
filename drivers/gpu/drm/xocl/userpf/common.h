@@ -116,7 +116,7 @@ struct xocl_dev	{
  */
 struct client_ctx {
 	struct list_head	link;
-	xuid_t                  xclbin_id;
+	uuid_t                  xclbin_id;
 	unsigned int            xclbin_locked;
 	unsigned int            abort;
 	unsigned int            num_cus;     /* number of resource locked explicitly by client */
