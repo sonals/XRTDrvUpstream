@@ -1,16 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
- * Copyright (C) 2016-2018 Xilinx, Inc. All rights reserved.
+ * Copyright (C) 2016-2019 Xilinx, Inc. All rights reserved.
  *
  * Authors: Lizhi.Hou@xilinx.com
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/pci.h>
@@ -21,9 +15,7 @@
 #include "../xocl_drv.h"
 #include "common.h"
 #include "../version.h"
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || RHEL_P2P_SUPPORT
 #include <linux/memremap.h>
-#endif
 
 #ifndef PCI_EXT_CAP_ID_REBAR
 #define PCI_EXT_CAP_ID_REBAR 0x15
@@ -73,19 +65,19 @@ struct xocl_pci_funcs userpf_pci_ops = {
 
 void xocl_reset_notify(struct pci_dev *pdev, bool prepare)
 {
-        struct xocl_dev *xdev = pci_get_drvdata(pdev);
+	struct xocl_dev *xdev = pci_get_drvdata(pdev);
 
-        xocl_info(&pdev->dev, "PCI reset NOTIFY, prepare %d", prepare);
+	xocl_info(&pdev->dev, "PCI reset NOTIFY, prepare %d", prepare);
 
-        if (prepare) {
+	if (prepare) {
 		xocl_mailbox_reset(xdev, false);
 		xocl_subdev_destroy_by_id(xdev, XOCL_SUBDEV_DMA);
-        } else {
+	} else {
 		reset_notify_client_ctx(xdev);
 		xocl_subdev_create_by_id(xdev, XOCL_SUBDEV_DMA);
 		xocl_mailbox_reset(xdev, true);
 		xocl_exec_reset(xdev);
-        }
+	}
 }
 
 static void kill_all_clients(struct xocl_dev *xdev)
@@ -122,7 +114,7 @@ int64_t xocl_hot_reset(struct xocl_dev *xdev, bool force)
 	bool skip = false;
 	int64_t ret = 0, mbret = 0;
 	struct mailbox_req mbreq = { MAILBOX_REQ_HOT_RESET, };
-	size_t resplen = sizeof (ret);
+	size_t resplen = sizeof(ret);
 
 	mutex_lock(&xdev->ctx_list_lock);
 	if (xdev->offline) {
@@ -163,9 +155,10 @@ int xocl_reclock(struct xocl_dev *xdev, void *data)
 	int err = 0;
 	int64_t msg = -ENODEV;
 	struct mailbox_req *req = NULL;
-	size_t resplen = sizeof (msg);
+	size_t resplen = sizeof(msg);
 	size_t reqlen = sizeof(struct mailbox_req)+sizeof(struct drm_xocl_reclock_info);
-	req = (struct mailbox_req *)kzalloc(reqlen, GFP_KERNEL);
+
+	req = kzalloc(reqlen, GFP_KERNEL);
 	req->req = MAILBOX_REQ_RECLOCK;
 	req->data_total_len = sizeof(struct drm_xocl_reclock_info);
 	memcpy(req->data, data, sizeof(struct drm_xocl_reclock_info));
@@ -173,12 +166,11 @@ int xocl_reclock(struct xocl_dev *xdev, void *data)
 	err = xocl_peer_request(xdev, req, reqlen,
 		&msg, &resplen, NULL, NULL);
 
-	if(msg != 0){
+	if (msg != 0)
 		err = -ENODEV;
-	}
 
 	kfree(req);
-  return err;
+	return err;
 }
 
 static void xocl_mailbox_srv(void *arg, void *data, size_t len,
@@ -219,44 +211,39 @@ void get_pcie_link_info(struct xocl_dev *xdev,
 	*link_speed = stat & PCI_EXP_LNKSTA_CLS;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 void user_pci_reset_prepare(struct pci_dev *pdev)
 {
-        xocl_reset_notify(pdev, true);
+	xocl_reset_notify(pdev, true);
 }
 
 void user_pci_reset_done(struct pci_dev *pdev)
 {
-        xocl_reset_notify(pdev, false);
+	xocl_reset_notify(pdev, false);
 }
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || RHEL_P2P_SUPPORT
 static void xocl_dev_percpu_release(struct percpu_ref *ref)
 {
-        struct xocl_dev *xdev = container_of(ref, struct xocl_dev, ref);
+	struct xocl_dev *xdev = container_of(ref, struct xocl_dev, ref);
 
-        complete(&xdev->cmp);
+	complete(&xdev->cmp);
 }
 
 static void xocl_dev_percpu_exit(void *data)
 {
-        struct percpu_ref *ref = data;
-        struct xocl_dev *xdev = container_of(ref, struct xocl_dev, ref);
+	struct percpu_ref *ref = data;
+	struct xocl_dev *xdev = container_of(ref, struct xocl_dev, ref);
 
-        wait_for_completion(&xdev->cmp);
-        percpu_ref_exit(ref);
+	wait_for_completion(&xdev->cmp);
+	percpu_ref_exit(ref);
 }
 
 
 static void xocl_dev_percpu_kill(void *data)
 {
-        struct percpu_ref *ref = data;
+	struct percpu_ref *ref = data;
 
-        percpu_ref_kill(ref);
+	percpu_ref_kill(ref);
 }
-
-#endif
 
 void xocl_p2p_mem_release(struct xocl_dev *xdev, bool recov_bar_sz)
 {
@@ -275,9 +262,8 @@ void xocl_p2p_mem_release(struct xocl_dev *xdev, bool recov_bar_sz)
 
 	if (recov_bar_sz) {
 		p2p_bar = xocl_get_p2p_bar(xdev, NULL);
-	        if (p2p_bar < 0) {
+		if (p2p_bar < 0)
 			return;
-		}
 
 		xocl_pci_resize_resource(pdev, p2p_bar,
 				(XOCL_PA_SECTION_SHIFT - 20));
@@ -289,7 +275,7 @@ void xocl_p2p_mem_release(struct xocl_dev *xdev, bool recov_bar_sz)
 
 int xocl_p2p_mem_reserve(struct xocl_dev *xdev)
 {
-        resource_size_t p2p_bar_addr;
+	resource_size_t p2p_bar_addr;
 	resource_size_t p2p_bar_len;
 	struct resource res;
 	uint32_t p2p_bar_idx;
@@ -299,7 +285,7 @@ int xocl_p2p_mem_reserve(struct xocl_dev *xdev)
 	xocl_info(&pdev->dev, "reserve p2p mem, bar %d, len %lld",
 			xdev->p2p_bar_idx, xdev->p2p_bar_len);
 
-	if(xdev->p2p_bar_idx < 0 ||
+	if (xdev->p2p_bar_idx < 0 ||
 		xdev->p2p_bar_len <= (1<<XOCL_PA_SECTION_SHIFT)) {
 		/* only p2p_bar_len > SECTION (256MB) */
 		xocl_info(&pdev->dev, "Did not find p2p BAR");
@@ -319,11 +305,9 @@ int xocl_p2p_mem_reserve(struct xocl_dev *xdev)
 	p2p_bar_addr = pci_resource_start(pdev, p2p_bar_idx);
 
 	res.start = p2p_bar_addr;
-	res.end   = p2p_bar_addr+p2p_bar_len-1;
+	res.end	  = p2p_bar_addr+p2p_bar_len-1;
 	res.name  = NULL;
 	res.flags = IORESOURCE_MEM;
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || RHEL_P2P_SUPPORT
 
 	init_completion(&xdev->cmp);
 
@@ -336,49 +320,27 @@ int xocl_p2p_mem_reserve(struct xocl_dev *xdev)
 		&xdev->ref);
 	if (ret)
 		goto failed;
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0) || RHEL_P2P_SUPPORT_76
 	xdev->pgmap.ref = &xdev->ref;
 	memcpy(&xdev->pgmap.res, &res, sizeof(struct resource));
 	xdev->pgmap.altmap_valid = false;
-#endif
-
-/* Ubuntu 16.04 kernel_ver 4.4.0.116*/
-#if KERNEL_VERSION(4, 5, 0) > LINUX_VERSION_CODE && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
-	xdev->p2p_bar_addr= devm_memremap_pages(&(pdev->dev), &res);
-
-#elif KERNEL_VERSION(4, 16, 0) > LINUX_VERSION_CODE && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0)) || RHEL_P2P_SUPPORT_74
-	xdev->p2p_bar_addr = devm_memremap_pages(&(pdev->dev), &res
-						   , &xdev->ref, NULL);
-
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0) || RHEL_P2P_SUPPORT_76
 	xdev->p2p_bar_addr = devm_memremap_pages(&(pdev->dev), &xdev->pgmap);
 
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0) || RHEL_P2P_SUPPORT
-	if(!xdev->p2p_bar_addr) {
+	if (!xdev->p2p_bar_addr) {
 		ret = -ENOMEM;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || RHEL_P2P_SUPPORT
 		percpu_ref_kill(&xdev->ref);
-#endif
 		devres_close_group(&pdev->dev, xdev->p2p_res_grp);
 		goto failed;
 	}
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || RHEL_P2P_SUPPORT
 	ret = devm_add_action_or_reset(&(pdev->dev), xocl_dev_percpu_kill,
-		&xdev->ref);
+				       &xdev->ref);
 	if (ret) {
 		percpu_ref_kill(&xdev->ref);
 		devres_close_group(&pdev->dev, xdev->p2p_res_grp);
 		goto failed;
 	}
-#endif
+
 	devres_close_group(&pdev->dev, xdev->p2p_res_grp);
 
 	return 0;
@@ -391,7 +353,7 @@ failed:
 
 static inline u64 xocl_pci_rebar_size_to_bytes(int size)
 {
-	        return 1ULL << (size + 20);
+	return 1ULL << (size + 20);
 }
 
 int xocl_get_p2p_bar(struct xocl_dev *xdev, u64 *bar_size)
@@ -594,9 +556,8 @@ int xocl_userpf_probe(struct pci_dev *pdev,
 	}
 
 	ret = xocl_p2p_mem_reserve(xdev);
-	if (ret) {
+	if (ret)
 		xocl_err(&pdev->dev, "failed to reserve p2p memory region");
-	}
 
 	ret = xocl_init_sysfs(&pdev->dev);
 	if (ret) {
@@ -605,13 +566,13 @@ int xocl_userpf_probe(struct pci_dev *pdev,
 	}
 
 	mutex_init(&xdev->ctx_list_lock);
-	xdev->needs_reset=false;
+	xdev->needs_reset = false;
 	atomic64_set(&xdev->total_execs, 0);
 	atomic_set(&xdev->outstanding_execs, 0);
 	INIT_LIST_HEAD(&xdev->ctx_list);
 
-        /* Launch the mailbox server. */
-        (void) xocl_peer_listen(xdev, xocl_mailbox_srv, (void *)xdev);
+	/* Launch the mailbox server. */
+	(void) xocl_peer_listen(xdev, xocl_mailbox_srv, (void *)xdev);
 
 	return 0;
 
@@ -698,12 +659,8 @@ static const struct pci_error_handlers xocl_err_handler = {
 	.error_detected	= user_pci_error_detected,
 	.slot_reset	= user_pci_slot_reset,
 	.resume		= user_pci_error_resume,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 	.reset_prepare	= user_pci_reset_prepare,
 	.reset_done	= user_pci_reset_done,
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)
-	.reset_notify   = xocl_reset_notify,
-#endif
 };
 
 static struct pci_driver userpf_driver = {
@@ -747,9 +704,8 @@ static int __init xocl_init(void)
 
 	for (i = 0; i < ARRAY_SIZE(xocl_drv_reg_funcs); ++i) {
 		ret = xocl_drv_reg_funcs[i]();
-		if (ret) {
+		if (ret)
 			goto failed;
-		}
 	}
 
 	ret = pci_register_driver(&userpf_driver);
@@ -759,9 +715,9 @@ static int __init xocl_init(void)
 	return 0;
 
 failed:
-	for (i--; i >= 0; i--) {
+	for (i--; i >= 0; i--)
 		xocl_drv_unreg_funcs[i]();
-	}
+
 	class_destroy(xrt_class);
 
 err_class_create:
@@ -774,9 +730,8 @@ static void __exit xocl_exit(void)
 
 	pci_unregister_driver(&userpf_driver);
 
-	for (i = ARRAY_SIZE(xocl_drv_unreg_funcs) - 1; i >= 0; i--) {
+	for (i = ARRAY_SIZE(xocl_drv_unreg_funcs) - 1; i >= 0; i--)
 		xocl_drv_unreg_funcs[i]();
-	}
 
 	class_destroy(xrt_class);
 }

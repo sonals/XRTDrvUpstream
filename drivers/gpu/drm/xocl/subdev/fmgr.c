@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * FPGA Manager bindings for XRT driver
  *
@@ -5,25 +7,9 @@
  *
  * Authors: Sonal Santan
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
-/*
- * FPGA Mgr integration is support limited to Ubuntu for now. RHEL/CentOS 7.X
- * kernels do not support FPGA Mgr yet.
- */
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)
-#define FPGA_MGR_SUPPORT
 #include <linux/fpga/fpga-mgr.h>
-#endif
 
 #include "../xocl_drv.h"
 #include "../xclbin.h"
@@ -43,24 +29,22 @@ struct xfpga_klass {
 	struct axlf *blob;
 	char name[64];
 	size_t count;
-#if defined(FPGA_MGR_SUPPORT)
 	enum fpga_mgr_states state;
-#endif
 };
 
-#if defined(FPGA_MGR_SUPPORT)
 static int xocl_pr_write_init(struct fpga_manager *mgr,
 			      struct fpga_image_info *info, const char *buf, size_t count)
 {
 	struct xfpga_klass *obj = mgr->priv;
 	const struct axlf *bin = (const struct axlf *)buf;
+
 	if (count < sizeof(struct axlf)) {
-	 	obj->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
+		obj->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
 		return -EINVAL;
 	}
 
 	if (count > bin->m_header.m_length) {
-	 	obj->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
+		obj->state = FPGA_MGR_STATE_WRITE_INIT_ERR;
 		return -EINVAL;
 	}
 
@@ -110,6 +94,7 @@ static int xocl_pr_write_complete(struct fpga_manager *mgr,
 {
 	int result;
 	struct xfpga_klass *obj = mgr->priv;
+
 	if (obj->state != FPGA_MGR_STATE_WRITE) {
 		obj->state = FPGA_MGR_STATE_WRITE_COMPLETE_ERR;
 		return -EINVAL;
@@ -144,7 +129,7 @@ static const struct fpga_manager_ops xocl_pr_ops = {
 	.write_complete = xocl_pr_write_complete,
 	.state = xocl_pr_state,
 };
-#endif
+
 
 struct platform_device_id fmgr_id_table[] = {
 	{ XOCL_FMGR, 0 },
@@ -153,45 +138,39 @@ struct platform_device_id fmgr_id_table[] = {
 
 static int fmgr_probe(struct platform_device *pdev)
 {
-        struct fpga_manager *mgr;
-        int ret = 0;
+	struct fpga_manager *mgr;
+	int ret = 0;
 	struct xfpga_klass *obj = kzalloc(sizeof(struct xfpga_klass), GFP_KERNEL);
+
 	if (!obj)
 		return -ENOMEM;
 
 	obj->xdev = xocl_get_xdev(pdev);
 	snprintf(obj->name, sizeof(obj->name), "Xilinx PCIe FPGA Manager");
 
-#if defined(FPGA_MGR_SUPPORT)
 	obj->state = FPGA_MGR_STATE_UNKNOWN;
 	mgr = fpga_mgr_create(&pdev->dev, obj->name, &xocl_pr_ops, obj);
-        if (!mgr) {
-                ret = -ENODEV;
-                goto out;
-        }
-        ret = fpga_mgr_register(mgr);
-        if (ret)
-                goto out;
-#else
-	platform_set_drvdata(pdev, obj);
-#endif
+	if (!mgr) {
+		ret = -ENODEV;
+		goto out;
+	}
+	ret = fpga_mgr_register(mgr);
+	if (ret)
+		goto out;
+
 	return ret;
 out:
-        kfree(obj);
-        return ret;
+	kfree(obj);
+	return ret;
 }
 
 static int fmgr_remove(struct platform_device *pdev)
 {
-#if defined(FPGA_MGR_SUPPORT)
 	struct fpga_manager *mgr = platform_get_drvdata(pdev);
 	struct xfpga_klass *obj = mgr->priv;
 
 	obj->state = FPGA_MGR_STATE_UNKNOWN;
 	fpga_mgr_unregister(mgr);
-#else
-	struct xfpga_klass *obj = platform_get_drvdata(pdev);
-#endif
 
 	platform_set_drvdata(pdev, NULL);
 	vfree(obj->blob);
