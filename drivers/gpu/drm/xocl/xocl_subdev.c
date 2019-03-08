@@ -23,9 +23,7 @@ struct xocl_subdev_array {
 static DEFINE_IDA(xocl_dev_minor_ida);
 
 static DEFINE_IDA(subdev_multi_inst_ida);
-static struct xocl_dsa_vbnv_map dsa_vbnv_map[] = {
-	XOCL_DSA_VBNV_MAP
-};
+static struct xocl_dsa_vbnv_map dsa_vbnv_map[] = XOCL_DSA_VBNV_MAP;
 
 static struct platform_device *xocl_register_subdev(xdev_handle_t xdev_hdl,
 	struct xocl_subdev_info *sdev_info, bool multi_inst)

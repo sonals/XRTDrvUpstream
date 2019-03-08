@@ -105,23 +105,6 @@ static inline void xocl_memcpy_toio(void *iomem, void *buf, u32 size)
 #define	XOCL_XILINX_VEN		0x10EE
 #define	XOCL_CHARDEV_REG_COUNT	16
 
-#ifdef RHEL_RELEASE_VERSION
-
-#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7,6)
-#define RHEL_P2P_SUPPORT_74  0
-#define RHEL_P2P_SUPPORT_76  1
-#elif RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7,3) && RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(7,6)
-#define RHEL_P2P_SUPPORT_74  1
-#define RHEL_P2P_SUPPORT_76  0
-#endif
-#else
-#define RHEL_P2P_SUPPORT_74  0
-#define RHEL_P2P_SUPPORT_76  0
-#endif
-
-
-#define RHEL_P2P_SUPPORT (RHEL_P2P_SUPPORT_74 | RHEL_P2P_SUPPORT_76)
-
 #define INVALID_SUBDEVICE ~0U
 
 #define XOCL_INVALID_MINOR -1
@@ -196,12 +179,12 @@ struct xocl_dev_core {
 	struct xocl_pci_funcs  *pci_ops;
 
 	u32			bar_idx;
-	void *__iomem           bar_addr;
+	void			* __iomem bar_addr;
 	resource_size_t		bar_size;
 	resource_size_t		feature_rom_offset;
 
 	u32			intr_bar_idx;
-	void *__iomem	        intr_bar_addr;
+	void			* __iomem intr_bar_addr;
 	resource_size_t		intr_bar_size;
 
 	struct task_struct     *health_thread;
@@ -385,7 +368,7 @@ struct xocl_mb_scheduler_funcs {
 #define	MB_SCHEDULER_DEV(xdev)	\
 	SUBDEV(xdev, XOCL_SUBDEV_MB_SCHEDULER).pldev
 #define	MB_SCHEDULER_OPS(xdev)	\
-	((struct xocl_mb_scheduler_funcs *)SUBDEV(xdev, 	\
+	((struct xocl_mb_scheduler_funcs *)SUBDEV(xdev,	\
 		XOCL_SUBDEV_MB_SCHEDULER).ops)
 #define	xocl_exec_create_client(xdev, priv)		\
 	(MB_SCHEDULER_DEV(xdev) ?			\
@@ -396,7 +379,7 @@ struct xocl_mb_scheduler_funcs {
 	MB_SCHEDULER_OPS(xdev)->destroy_client(MB_SCHEDULER_DEV(xdev), priv) : \
 	NULL)
 #define	xocl_exec_poll_client(xdev, filp, wait, priv)		\
-	(MB_SCHEDULER_DEV(xdev) ? 				\
+	(MB_SCHEDULER_DEV(xdev) ?					\
 	MB_SCHEDULER_OPS(xdev)->poll_client(MB_SCHEDULER_DEV(xdev), filp, \
 	wait, priv) : 0)
 #define	xocl_exec_client_ioctl(xdev, op, data, drm_filp)		\
@@ -404,11 +387,11 @@ struct xocl_mb_scheduler_funcs {
 	MB_SCHEDULER_OPS(xdev)->client_ioctl(MB_SCHEDULER_DEV(xdev),	\
 	op, data, drm_filp) : -ENODEV)
 #define	xocl_exec_stop(xdev)		\
-	(MB_SCHEDULER_DEV(xdev) ? 				\
+	(MB_SCHEDULER_DEV(xdev) ?					\
 	 MB_SCHEDULER_OPS(xdev)->stop(MB_SCHEDULER_DEV(xdev)) : \
 	 -ENODEV)
 #define	xocl_exec_reset(xdev)		\
-	(MB_SCHEDULER_DEV(xdev) ? 				\
+	(MB_SCHEDULER_DEV(xdev) ?					\
 	 MB_SCHEDULER_OPS(xdev)->reset(MB_SCHEDULER_DEV(xdev)) : \
 	 -ENODEV)
 
@@ -448,7 +431,7 @@ struct xocl_sysmon_funcs {
 #define	SYSMON_DEV(xdev)	\
 	SUBDEV(xdev, XOCL_SUBDEV_SYSMON).pldev
 #define	SYSMON_OPS(xdev)	\
-	((struct xocl_sysmon_funcs *)SUBDEV(xdev, 	\
+	((struct xocl_sysmon_funcs *)SUBDEV(xdev,			\
 		XOCL_SUBDEV_SYSMON).ops)
 #define	xocl_sysmon_get_prop(xdev, prop, val)		\
 	(SYSMON_DEV(xdev) ? SYSMON_OPS(xdev)->get_prop(SYSMON_DEV(xdev), \
@@ -662,43 +645,43 @@ struct xocl_icap_funcs {
 #define	ICAP_OPS(xdev)							\
 	((struct xocl_icap_funcs *)SUBDEV(xdev, XOCL_SUBDEV_ICAP).ops)
 #define	xocl_icap_reset_axi_gate(xdev)					\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->reset_axi_gate(ICAP_DEV(xdev)) :		\
 	NULL)
 #define	xocl_icap_reset_bitstream(xdev)					\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->reset_bitstream(ICAP_DEV(xdev)) :		\
 	-ENODEV)
 #define	xocl_icap_download_axlf(xdev, xclbin)				\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->download_bitstream_axlf(ICAP_DEV(xdev), xclbin) : \
 	-ENODEV)
 #define	xocl_icap_download_boot_firmware(xdev)				\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->download_boot_firmware(ICAP_DEV(xdev)) :	\
 	-ENODEV)
 #define	xocl_icap_ocl_get_freq(xdev, region, freqs, num)		\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->ocl_get_freq(ICAP_DEV(xdev), region, freqs, num) : \
 	-ENODEV)
 #define	xocl_icap_ocl_update_clock_freq_topology(xdev, freqs)		\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->ocl_update_clock_freq_topology(ICAP_DEV(xdev), freqs) : \
 	-ENODEV)
 #define	xocl_icap_ocl_set_freq(xdev, region, freqs, num)		\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->ocl_set_freq(ICAP_DEV(xdev), region, freqs, num) : \
 	-ENODEV)
 #define	xocl_icap_lock_bitstream(xdev, uuid, pid)			\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->ocl_lock_bitstream(ICAP_DEV(xdev), uuid, pid) :	\
 	-ENODEV)
 #define	xocl_icap_unlock_bitstream(xdev, uuid, pid)			\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->ocl_unlock_bitstream(ICAP_DEV(xdev), uuid, pid) : \
 	-ENODEV)
 #define	xocl_icap_get_data(xdev, kind)				\
-	(ICAP_OPS(xdev) ? 						\
+	(ICAP_OPS(xdev) ?						\
 	ICAP_OPS(xdev)->get_data(ICAP_DEV(xdev), kind) : \
 	0)
 

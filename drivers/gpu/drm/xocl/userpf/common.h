@@ -2,7 +2,7 @@
  * Copyright (C) 2016-2018 Xilinx, Inc. All rights reserved.
  *
  * Authors:
- * 		Lizhi Hou <lizhi.hou@xilinx.com>
+ * Lizhi Hou <lizhi.hou@xilinx.com>
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
  * may be copied, distributed, and modified under those terms.
@@ -20,9 +20,7 @@
 #include "xocl_bo.h"
 #include "../xocl_drm.h"
 #include <drm/xocl_drm.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 #include <linux/hashtable.h>
-#endif
 
 #define XOCL_DRIVER_DESC        "Xilinx PCIe Accelerator Device Manager"
 #define XOCL_DRIVER_DATE        "20180612"
@@ -33,23 +31,23 @@
 #define XOCL_MAX_CONCURRENT_CLIENTS 32
 
 #define XOCL_DRIVER_VERSION                             \
-        __stringify(XOCL_DRIVER_MAJOR) "."              \
-        __stringify(XOCL_DRIVER_MINOR) "."              \
-        __stringify(XOCL_DRIVER_PATCHLEVEL)
+	__stringify(XOCL_DRIVER_MAJOR) "."              \
+	__stringify(XOCL_DRIVER_MINOR) "."              \
+	__stringify(XOCL_DRIVER_PATCHLEVEL)
 
 #define XOCL_DRIVER_VERSION_NUMBER                              \
-        ((XOCL_DRIVER_MAJOR)*1000 + (XOCL_DRIVER_MINOR)*100 +   \
-        XOCL_DRIVER_PATCHLEVEL)
+	((XOCL_DRIVER_MAJOR)*1000 + (XOCL_DRIVER_MINOR)*100 +   \
+	XOCL_DRIVER_PATCHLEVEL)
 
 #define userpf_err(d, args...)                     \
-        xocl_err(&XDEV(d)->pdev->dev, ##args)
+	xocl_err(&XDEV(d)->pdev->dev, ##args)
 #define userpf_info(d, args...)                    \
-        xocl_info(&XDEV(d)->pdev->dev, ##args)
+	xocl_info(&XDEV(d)->pdev->dev, ##args)
 #define userpf_dbg(d, args...)                     \
-        xocl_dbg(&XDEV(d)->pdev->dev, ##args)
+	xocl_dbg(&XDEV(d)->pdev->dev, ##args)
 
 #define xocl_get_root_dev(dev, root)		\
-        for (root = dev; root->bus && root->bus->self; root = root->bus->self)
+	for (root = dev; root->bus && root->bus->self; root = root->bus->self)
 
 #define	XOCL_USER_PROC_HASH_SZ		256
 
@@ -61,13 +59,7 @@
 #define MAX_U32_CU_MASKS (((MAX_CUS-1)>>5) + 1)
 #define MAX_DEPS        8
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 #define XOCL_DRM_FREE_MALLOC
-#elif defined(RHEL_RELEASE_CODE)
-#if RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(7,4)
-#define XOCL_DRM_FREE_MALLOC
-#endif
-#endif
 
 #define XOCL_PA_SECTION_SHIFT		28
 
@@ -82,17 +74,13 @@ struct xocl_dev	{
 
 	u32			p2p_bar_idx;
 	resource_size_t		p2p_bar_len;
-	void * __iomem		p2p_bar_addr;
+	void			* __iomem p2p_bar_addr;
 
 	/*should be removed after mailbox is supported */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 5, 0) || RHEL_P2P_SUPPORT
 	struct percpu_ref ref;
 	struct completion cmp;
-#endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0) || RHEL_P2P_SUPPORT_76
 	struct dev_pagemap pgmap;
-#endif
 	struct list_head                ctx_list;
 	struct mutex			ctx_list_lock;
 	unsigned int                    needs_reset; /* bool aligned */
@@ -119,8 +107,8 @@ struct client_ctx {
 	uuid_t                  xclbin_id;
 	unsigned int            xclbin_locked;
 	unsigned int            abort;
-	unsigned int            num_cus;     /* number of resource locked explicitly by client */
-	atomic_t 		trigger;     /* count of poll notification to acknowledge */
+	unsigned int		num_cus; /* number of resource locked explicitly by client */
+	atomic_t		trigger;     /* count of poll notification to acknowledge */
 	atomic_t                outstanding_execs;
 	struct mutex		lock;
 	struct xocl_dev        *xdev;
@@ -129,12 +117,12 @@ struct client_ctx {
 };
 
 struct xocl_mm_wrapper {
-  struct drm_mm *mm;
-  struct drm_xocl_mm_stat *mm_usage_stat;
-  uint64_t start_addr;
-  uint64_t size;
-  uint32_t ddr;
-  struct hlist_node node;
+	struct drm_mm *mm;
+	struct drm_xocl_mm_stat *mm_usage_stat;
+	uint64_t start_addr;
+	uint64_t size;
+	uint32_t ddr;
+	struct hlist_node node;
 };
 
 /* ioctl functions */
@@ -147,9 +135,9 @@ int xocl_user_intr_ioctl(struct drm_device *dev, void *data,
 int xocl_read_axlf_ioctl(struct drm_device *dev, void *data,
 	struct drm_file *filp);
 int xocl_hot_reset_ioctl(struct drm_device *dev, void *data,
-                         struct drm_file *filp);
+	struct drm_file *filp);
 int xocl_reclock_ioctl(struct drm_device *dev, void *data,
-  struct drm_file *filp);
+	struct drm_file *filp);
 
 /* sysfs functions */
 int xocl_init_sysfs(struct device *dev);
@@ -158,14 +146,12 @@ void xocl_fini_sysfs(struct device *dev);
 /* helper functions */
 int64_t xocl_hot_reset(struct xocl_dev *xdev, bool force);
 void xocl_p2p_mem_release(struct xocl_dev *xdev, bool recov_bar_sz);
-int xocl_p2p_mem_reserve(struct xocl_dev * xdev);
+int xocl_p2p_mem_reserve(struct xocl_dev *xdev);
 int xocl_get_p2p_bar(struct xocl_dev *xdev, u64 *bar_size);
 int xocl_pci_resize_resource(struct pci_dev *dev, int resno, int size);
 void xocl_reset_notify(struct pci_dev *pdev, bool prepare);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 void user_pci_reset_prepare(struct pci_dev *pdev);
 void user_pci_reset_done(struct pci_dev *pdev);
-#endif
 
 uint get_live_client_size(struct xocl_dev *xdev);
 void reset_notify_client_ctx(struct xocl_dev *xdev);

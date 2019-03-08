@@ -69,17 +69,7 @@ static inline struct drm_gem_object *xocl_gem_object_lookup(struct drm_device *d
 							    struct drm_file *filp,
 							    u32 handle)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,7,0)
 	return drm_gem_object_lookup(filp, handle);
-#elif defined(RHEL_RELEASE_CODE)
-#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7,4)
-	return drm_gem_object_lookup(filp, handle);
-#else
-	return drm_gem_object_lookup(dev, filp, handle);
-#endif
-#else
-	return drm_gem_object_lookup(dev, filp, handle);
-#endif
 }
 
 static inline struct drm_xocl_dev *bo_xocl_dev(const struct drm_xocl_bo *bo)
@@ -87,14 +77,9 @@ static inline struct drm_xocl_dev *bo_xocl_dev(const struct drm_xocl_bo *bo)
 	return bo->base.dev->dev_private;
 }
 
-static inline unsigned xocl_bo_ddr_idx(unsigned flags)
+static inline unsigned int xocl_bo_ddr_idx(unsigned int flags)
 {
-        return flags;
-//	const unsigned ddr = flags;
-//	//const unsigned ddr = flags & XOCL_MEM_BANK_MSK;
-//	if (!ddr)
-//		return 0xffffffff;
-//	return __builtin_ctz(ddr);
+	return flags;
 }
 
 int xocl_create_bo_ioctl(struct drm_device *dev, void *data,

@@ -24,10 +24,7 @@
 
 //#define USE_FEATURE_ROM
 
-static const struct pci_device_id pci_ids[] = {
-	XOCL_MGMT_PCI_IDS,
-	{ 0, }
-};
+static const struct pci_device_id pci_ids[] = XOCL_MGMT_PCI_IDS;
 
 MODULE_DEVICE_TABLE(pci, pci_ids);
 
@@ -874,7 +871,6 @@ static int (*drv_reg_funcs[])(void) __initdata = {
 	xocl_init_sysmon,
 	xocl_init_mb,
 	xocl_init_xvc,
-	xocl_init_xiic,
 	xocl_init_mailbox,
 	xocl_init_firewall,
 	xocl_init_icap,
@@ -889,7 +885,6 @@ static void (*drv_unreg_funcs[])(void) = {
 	xocl_fini_sysmon,
 	xocl_fini_mb,
 	xocl_fini_xvc,
-	xocl_fini_xiic,
 	xocl_fini_mailbox,
 	xocl_fini_firewall,
 	xocl_fini_icap,
