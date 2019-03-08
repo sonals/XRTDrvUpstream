@@ -34,8 +34,8 @@ struct FreqScalingTableRow{
 };
 
 enum PROMType  {
-  BPI    = 0
-  ,SPI   = 1
+        BPI    = 0,
+        SPI   = 1
    //room for 6 more types of flash devices.
 };
 
@@ -58,8 +58,7 @@ enum DebugType  {
 //   header.FeatureBitMap = 0;
 //   header.FeatureBitMap |= FeatureBitMask::FBM_IS_UNIFIED;
 //
-enum FeatureBitMask
-{
+enum FeatureBitMask {
    UNIFIED_PLATFORM      =   0x0000000000000001       /* bit 1 : Unified platform */
    ,XARE_ENBLD           =   0x0000000000000002       /* bit 2 : Aurora link enabled DSA */
    ,BOARD_MGMT_ENBLD     =   0x0000000000000004       /* bit 3 : Has MB based power monitoring */

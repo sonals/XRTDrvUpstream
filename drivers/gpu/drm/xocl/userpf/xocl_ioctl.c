@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
@@ -5,34 +7,17 @@
  *
  * Authors: Sonal Santan
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
  */
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,0)
-#include <drm/drm_backport.h>
-#endif
 #include <drm/drmP.h>
 #include <drm/drm_gem.h>
 #include <drm/drm_mm.h>
 #include <linux/eventfd.h>
 #include <linux/uuid.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 #include <linux/hashtable.h>
-#endif
 #include "../version.h"
 #include "common.h"
-
-#if defined(XOCL_UUID)
-uuid_t uuid_null = NULL_UUID_LE;
-#endif
 
 int xocl_info_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 {
@@ -217,8 +202,8 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 
 	userpf_info(xdev, "READ_AXLF IOCTL\n");
 
-	if(!xocl_is_unified(xdev)) {
-		printk(KERN_INFO "XOCL: not unified dsa");
+	if (!xocl_is_unified(xdev)) {
+		userpf_info(xdev, "XOCL: not unified dsa");
 		return err;
 	}
 
@@ -251,7 +236,7 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 	 */
 	if (!uuid_equal(xclbin_id, &bin_obj.m_header.uuid)) {
 		if (atomic_read(&xdev->outstanding_execs)) {
-			printk(KERN_ERR "Current xclbin is busy, can't change\n");
+			userpf_err(xdev, "Current xclbin is busy, can't change\n");
 			return -EBUSY;
 		}
 	}
@@ -259,26 +244,24 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 	//Ignore timestamp matching for AWS platform
 	if (!xocl_is_aws(xdev) && !xocl_verify_timestamp(xdev,
 		bin_obj.m_header.m_featureRomTimeStamp)) {
-		printk(KERN_ERR "TimeStamp of ROM did not match Xclbin\n");
+		userpf_err(xdev, "TimeStamp of ROM did not match Xclbin\n");
 		return -EINVAL;
 	}
 
-	printk(KERN_INFO "XOCL: VBNV and TimeStamps matched\n");
+	userpf_info(xdev, "XOCL: VBNV and TimeStamps matched\n");
 
 	if (uuid_equal(xclbin_id, &bin_obj.m_header.uuid)) {
-		printk(KERN_INFO "Skipping repopulating topology, connectivity,ip_layout data\n");
+		userpf_info(xdev, "Skipping repopulating topology, connectivity,ip_layout data\n");
 		goto done;
 	}
 
 	//Copy from user space and proceed.
 	axlf = vmalloc(bin_obj.m_header.m_length);
 	if (!axlf) {
-		DRM_ERROR("Unable to create axlf\n");
+		userpf_err(xdev, "Unable to create axlf\n");
 		err = -ENOMEM;
 		goto done;
 	}
-
-	printk(KERN_INFO "XOCL: Marker 5\n");
 
 	if (copy_from_user(axlf, axlf_ptr->xclbin, bin_obj.m_header.m_length)) {
 		err = -EFAULT;
@@ -302,8 +285,8 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 	 * Ignore this and keep disable preserve_mem if not for aws.
 	 */
 	if (xocl_is_aws(xdev) && (topology != NULL)) {
-		if ( (size == sizeof_sect(topology, m_mem_data)) &&
-		    !memcmp(new_topology, topology, size) ) {
+		if ((size == sizeof_sect(topology, m_mem_data)) &&
+		    !memcmp(new_topology, topology, size)) {
 			xocl_xdev_info(xdev,"MEM_TOPOLOGY match,"
 				       "preserve mem_topology.");
 			preserve_mem = 1;
@@ -316,14 +299,14 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 	/* Switching the xclbin, make sure none of the buffers are used. */
 	if (!preserve_mem) {
 		err = xocl_check_topology(drm_p);
-		if(err)
+		if (err)
 			goto done;
 		xocl_cleanup_mem(drm_p);
 	}
 
 	err = xocl_icap_download_axlf(xdev, axlf);
 	if (err) {
-		DRM_ERROR("%s Fail to download \n", __FUNCTION__);
+		userpf_err(xdev, "%s Fail to download \n", __func__);
 		/*
 		 * Don't just bail out here, always recreate drm mem
 		 * since we have cleaned it up before download.
@@ -332,6 +315,7 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 
 	if (!preserve_mem) {
 		int rc = xocl_init_mem(drm_p);
+
 		if (err == 0)
 			err = rc;
 	}
@@ -383,7 +367,7 @@ uint get_live_client_size(struct xocl_dev *xdev) {
 
 void reset_notify_client_ctx(struct xocl_dev *xdev)
 {
-	xdev->needs_reset=false;
+	xdev->needs_reset = false;
 	wmb();
 }
 

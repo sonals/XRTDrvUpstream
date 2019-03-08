@@ -90,7 +90,7 @@ static int pcie_unmask_surprise_down(struct pci_dev *pdev, u32 orig_mask)
 	printk(KERN_DEBUG "%s: pcie_unmask_surprise_down \n", DRV_NAME);
 
 	bridge = find_aer_cap(bridge);
-	if(bridge) {
+	if (bridge) {
 		cap = pci_find_ext_capability(bridge, PCI_EXT_CAP_ID_ERR);
 		if (cap) {
 			pci_write_config_dword(bridge, cap + PCI_ERR_UNCOR_MASK, orig_mask);
@@ -141,19 +141,19 @@ void platform_axilite_flush(struct xclmgmt_dev *lro)
 	}
 
 	for (i = 0; i < 4; i++) {
-                val = MGMT_READ_REG32(lro, XHWICAP_CR);
+		val = MGMT_READ_REG32(lro, XHWICAP_CR);
 		xocl_af_clear(lro);
-        }
+	}
 
-        for (i = 0; i < 4; i++) {
-                val = MGMT_READ_REG32(lro, GPIO_NULL_BASE);
+	for (i = 0; i < 4; i++) {
+		val = MGMT_READ_REG32(lro, GPIO_NULL_BASE);
 		xocl_af_clear(lro);
-        }
+	}
 
-        for (i = 0; i < 4; i++) {
-                val = MGMT_READ_REG32(lro, AXI_GATE_BASE);
+	for (i = 0; i < 4; i++) {
+		val = MGMT_READ_REG32(lro, AXI_GATE_BASE);
 		xocl_af_clear(lro);
-        }
+	}
 }
 
 /**
@@ -205,7 +205,7 @@ long reset_hot_ioctl(struct xclmgmt_dev *lro)
 	}
 
 	/* Workaround for some DSAs. Flush axilite busses */
-	if(dev_info->flags & XOCL_DSAFLAG_AXILITE_FLUSH)
+	if (dev_info->flags & XOCL_DSAFLAG_AXILITE_FLUSH)
 		platform_axilite_flush(lro);
 
 	/*
@@ -217,7 +217,7 @@ long reset_hot_ioctl(struct xclmgmt_dev *lro)
 	} while (retry++ < XCLMGMT_RESET_MAX_RETRY &&
 		xocl_af_check(lro, NULL));
 
-	if (retry >= XCLMGMT_RESET_MAX_RETRY){
+	if (retry >= XCLMGMT_RESET_MAX_RETRY) {
 		mgmt_err(lro, "Board is not able to recover by PCI Hot reset. "
 			"Please warm reboot");
 		return -EIO;
@@ -227,7 +227,7 @@ long reset_hot_ioctl(struct xclmgmt_dev *lro)
 	xocl_icap_reset_axi_gate(lro);
 
 	/* Workaround for some DSAs. Flush axilite busses */
-	if(dev_info->flags & XOCL_DSAFLAG_AXILITE_FLUSH)
+	if (dev_info->flags & XOCL_DSAFLAG_AXILITE_FLUSH)
 		platform_axilite_flush(lro);
 
 	/* restart XMC/ERT */

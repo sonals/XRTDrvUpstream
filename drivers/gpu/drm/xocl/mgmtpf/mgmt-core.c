@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * Simple Driver for Management PF
  *
@@ -7,16 +9,6 @@
  *
  * Author(s):
  * Sonal Santan <sonal.santan@xilinx.com>
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
  */
 #include "mgmt-core.h"
 #include <linux/ioctl.h>
@@ -349,7 +341,7 @@ static int create_char(struct xclmgmt_dev *lro)
 	lro_char->sys_device = device_create(xrt_class,
 				&lro->core.pdev->dev,
 				lro_char->cdev->dev, NULL,
-			 	DRV_NAME "%d", lro->instance);
+				DRV_NAME "%d", lro->instance);
 
 	if (IS_ERR(lro_char->sys_device)) {
 		rc = PTR_ERR(lro_char->sys_device);
@@ -405,7 +397,7 @@ struct pci_dev *find_user_node(const struct pci_dev *pdev)
 
 inline void check_temp_within_range(struct xclmgmt_dev *lro, u32 temp)
 {
-	if(temp < LOW_TEMP || temp > HI_TEMP) {
+	if (temp < LOW_TEMP || temp > HI_TEMP) {
 		mgmt_err(lro, "Temperature outside normal range (%d-%d) %d.",
 			LOW_TEMP, HI_TEMP, temp);
 	}
@@ -413,7 +405,7 @@ inline void check_temp_within_range(struct xclmgmt_dev *lro, u32 temp)
 
 inline void check_volt_within_range(struct xclmgmt_dev *lro, u16 volt)
 {
-	if(volt < LOW_MILLVOLT || volt > HI_MILLVOLT) {
+	if (volt < LOW_MILLVOLT || volt > HI_MILLVOLT) {
 		mgmt_err(lro, "Voltage outside normal range (%d-%d)mV %d.",
 			LOW_MILLVOLT, HI_MILLVOLT, volt);
 	}
@@ -488,16 +480,10 @@ static int xclmgmt_setup_msix(struct xclmgmt_dev *lro)
 		XCLMGMT_INTR_USER_VECTOR) & 0x0f;
 	total = lro->msix_user_start_vector + XCLMGMT_MAX_USER_INTR;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0)
 	i = 0; // Suppress warning about unused variable
 	rv = pci_alloc_irq_vectors(lro->core.pdev, total, total, PCI_IRQ_MSIX);
 	if (rv == total)
 		rv = 0;
-#else
-	for (i = 0; i < total; i++)
-		lro->msix_irq_entries[i].entry = i;
-	rv = pci_enable_msix(lro->core.pdev, lro->msix_irq_entries, total);
-#endif
 	printk(KERN_INFO "setting up msix, total irqs: %d, rv=%d\n", total, rv);
 	return rv;
 }
@@ -529,13 +515,8 @@ static int xclmgmt_intr_register(xdev_handle_t xdev_hdl, u32 intr,
 	if (!xclmgmt_support_intr(lro))
 		return -EOPNOTSUPP;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0)
 	vec = pci_irq_vector(lro->core.pdev,
 		lro->msix_user_start_vector + intr);
-#else
-	vec = lro->msix_irq_entries[
-		lro->msix_user_start_vector + intr].vector;
-#endif
 
 	if (handler)
 		return request_irq(vec, handler, 0, DRV_NAME, arg);
@@ -563,33 +544,32 @@ static int xclmgmt_read_subdev_req(struct xclmgmt_dev *lro, char *data_ptr, void
 	size_t resp_sz = 0;
 	void *ptr = NULL;
 	struct mailbox_subdev_peer *subdev_req = (struct mailbox_subdev_peer *)data_ptr;
-	switch(subdev_req->kind){
-		case VOL_12V_PEX:
-			val = xocl_xmc_get_data(lro, subdev_req->kind);
-			resp_sz = sizeof(u32);
-			ptr = (void *)&val;
-			break;
-		case IDCODE:
-			val = xocl_icap_get_data(lro, subdev_req->kind);
-			resp_sz = sizeof(u32);
-			ptr = (void *)&val;
-			break;
-		case XCLBIN_UUID:
-			ptr = (void *)xocl_icap_get_data(lro, subdev_req->kind);
-			resp_sz = sizeof(uuid_t);
-			break;
-		default:
-			break;
+	switch (subdev_req->kind) {
+	case VOL_12V_PEX:
+		val = xocl_xmc_get_data(lro, subdev_req->kind);
+		resp_sz = sizeof(u32);
+		ptr = (void *)&val;
+		break;
+	case IDCODE:
+		val = xocl_icap_get_data(lro, subdev_req->kind);
+		resp_sz = sizeof(u32);
+		ptr = (void *)&val;
+		break;
+	case XCLBIN_UUID:
+		ptr = (void *)xocl_icap_get_data(lro, subdev_req->kind);
+		resp_sz = sizeof(uuid_t);
+		break;
+	default:
+		break;
 	}
 
-	if(!resp_sz){
+	if (!resp_sz)
 		return -EINVAL;
-	}
 
 	*resp = vmalloc(resp_sz);
-	if(*resp == NULL){
+	if (*resp == NULL)
 		return -ENOMEM;
-	}
+
 	memcpy(*resp, ptr, resp_sz);
 	*sz = resp_sz;
 	return 0;
@@ -627,8 +607,8 @@ static void xclmgmt_mailbox_srv(void *arg, void *data, size_t len,
 		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
 		break;
 	case MAILBOX_REQ_LOAD_XCLBIN_KADDR:
-		mb_kaddr = (struct mailbox_bitstream_kaddr*)req->data;
-		ret = xocl_icap_download_axlf(lro, (void*)mb_kaddr->addr);
+		mb_kaddr = (struct mailbox_bitstream_kaddr *)req->data;
+		ret = xocl_icap_download_axlf(lro, (void *)mb_kaddr->addr);
 		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
 		break;
 	case MAILBOX_REQ_LOAD_XCLBIN:
@@ -641,7 +621,7 @@ static void xclmgmt_mailbox_srv(void *arg, void *data, size_t len,
 		break;
 	case MAILBOX_REQ_PEER_DATA:
 		ret = xclmgmt_read_subdev_req(lro, req->data, &resp, &sz);
-		if(ret){
+		if (ret) {
 			/* if can't get data, return 0 as response */
 			ret = 0;
 			(void) xocl_peer_response(lro, msgid, &ret, sizeof(ret));
@@ -684,7 +664,7 @@ static void xclmgmt_extended_probe(struct xclmgmt_dev *lro)
 		xocl_err(&pdev->dev, "failed to register firewall\n");
 		goto fail_firewall;
 	}
-	if(dev_info->flags & XOCL_DSAFLAG_AXILITE_FLUSH)
+	if (dev_info->flags & XOCL_DSAFLAG_AXILITE_FLUSH)
 		platform_axilite_flush(lro);
 
 	ret = xocl_subdev_create_all(lro, dev_info->subdev_info,
@@ -760,17 +740,17 @@ static int xclmgmt_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	lro->ready = false;
 
 	rc = pcie_get_readrq(pdev);
-        if (rc < 0) {
-                dev_err(&pdev->dev, "failed to read mrrs %d\n", rc);
-                goto err_alloc;
-        }
-        if (rc > 512) {
-                rc = pcie_set_readrq(pdev, 512);
-                if (rc) {
-                        dev_err(&pdev->dev, "failed to force mrrs %d\n", rc);
-                        goto err_alloc;
-                }
-        }
+	if (rc < 0) {
+		dev_err(&pdev->dev, "failed to read mrrs %d\n", rc);
+		goto err_alloc;
+	}
+	if (rc > 512) {
+		rc = pcie_set_readrq(pdev, 512);
+		if (rc) {
+			dev_err(&pdev->dev, "failed to force mrrs %d\n", rc);
+			goto err_alloc;
+		}
+	}
 
 	rc = xocl_alloc_dev_minor(lro);
 	if (rc)
@@ -827,9 +807,8 @@ static void xclmgmt_remove(struct pci_dev *pdev)
 {
 	struct xclmgmt_dev *lro;
 
-	if ((pdev == 0) || (dev_get_drvdata(&pdev->dev) == 0)) {
+	if ((pdev == 0) || (dev_get_drvdata(&pdev->dev) == 0))
 		return;
-	}
 
 	lro = (struct xclmgmt_dev *)dev_get_drvdata(&pdev->dev);
 	mgmt_info(lro, "remove(0x%p) where pdev->dev.driver_data = 0x%p",
@@ -937,9 +916,8 @@ static int __init xclmgmt_init(void)
 	/* Need to init sub device driver before pci driver register */
 	for (i = 0; i < ARRAY_SIZE(drv_reg_funcs); ++i) {
 		res = drv_reg_funcs[i]();
-		if (res) {
+		if (res)
 			goto drv_init_err;
-		}
 	}
 
 	res = pci_register_driver(&xclmgmt_driver);
@@ -950,9 +928,9 @@ static int __init xclmgmt_init(void)
 
 drv_init_err:
 reg_err:
-	for (i--; i >= 0; i--) {
+	for (i--; i >= 0; i--)
 		drv_unreg_funcs[i]();
-	}
+
 	unregister_chrdev_region(xclmgmt_devnode, XOCL_MAX_DEVICES);
 alloc_err:
 	pr_info(DRV_NAME " init() err\n");

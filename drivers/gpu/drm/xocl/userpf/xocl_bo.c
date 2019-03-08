@@ -22,12 +22,6 @@
 #include <linux/dma-buf.h>
 #include <linux/pagemap.h>
 #include <linux/version.h>
-#ifdef XOCL_CMA_ALLOC
-#include <linux/cma.h>
-#endif
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,0)
-#include <drm/drm_backport.h>
-#endif
 #include <drm/drmP.h>
 #include "common.h"
 
@@ -139,13 +133,6 @@ static void xocl_free_bo(struct drm_gem_object *obj)
 			xocl_release_pages(xobj->pages, npages, 0);
 			drm_free_large(xobj->pages);
 		}
-#ifdef XOCL_CMA_ALLOC
-		else if (xocl_bo_cma(xobj)) {
-			if (xobj->pages[0])
-				cma_release(xdev->cma_blk, xobj->pages[0], npages);
-			drm_free_large(xobj->pages);
-		}
-#endif
 		else if(xocl_bo_p2p(xobj)){
 			drm_free_large(xobj->pages);
 			/*devm_* will release all the pages while unload xocl driver*/
@@ -218,13 +205,8 @@ static inline int check_bo_user_reqs(const struct drm_device *dev,
 #endif
 	if (type == DRM_XOCL_BO_EXECBUF)
 		return 0;
-#ifdef XOCL_CMA_ALLOC
-	if (type == DRM_XOCL_BO_CMA)
-		return 0;
-#else
 	if (type == DRM_XOCL_BO_CMA)
 		return -EINVAL;
-#endif
 
 	//From "mem_topology" or "feature rom" depending on
 	//unified or non-unified dsa
@@ -286,12 +268,6 @@ static struct drm_xocl_bo *xocl_create_bo(struct drm_device *dev,
 	if (user_type & DRM_XOCL_BO_P2P){
 		xobj->type = XOCL_BO_P2P;
 	}
-#ifdef XOCL_CMA_ALLOC
-	if (user_type == DRM_XOCL_BO_CMA) {
-		xobj->type = XOCL_BO_CMA;
-		return xobj;
-	}
-#endif
 
 	xobj->mm_node = kzalloc(sizeof(*xobj->mm_node), GFP_KERNEL);
 	if (!xobj->mm_node) {
@@ -415,11 +391,6 @@ int xocl_create_bo_ioctl(struct drm_device *dev,
 	struct drm_xocl_bo *xobj;
 	struct xocl_drm *drm_p = dev->dev_private;
 	struct xocl_dev *xdev = drm_p->xdev;
-#ifdef XOCL_CMA_ALLOC
-	unsigned int page_count;
-	int j;
-	struct page *cpages;
-#endif
 	struct drm_xocl_create_bo *args = data;
 	//unsigned ddr = args->flags & XOCL_MEM_BANK_MSK;
 	unsigned ddr = args->flags;
@@ -461,35 +432,12 @@ int xocl_create_bo_ioctl(struct drm_device *dev,
 			XOCL_MEM_TOPOLOGY(xdev)->m_mem_data[ddr].m_base_address;
 	}
 
-#ifdef XOCL_CMA_ALLOC
-	//if (args->flags == DRM_XOCL_BO_CMA) {
-	if (args->type == DRM_XOCL_BO_CMA) {
-		page_count = xobj->base.size >> PAGE_SHIFT;
-		xobj->pages = drm_malloc_ab(page_count, sizeof(*xobj->pages));
-		if (!xobj->pages) {
-			ret = -ENOMEM;
-			goto out_free;
-		}
-		cpages = cma_alloc(xdev->cma_blk, page_count, 0, GFP_KERNEL);
-		if (!cpages) {
-			ret = -ENOMEM;
-			goto out_free;
-		}
-		for (j = 0; j < page_count; j++)
-			xobj->pages[j] = cpages++;
-	}
-	else {
-		xobj->pages = drm_gem_get_pages(&xobj->base);
-	}
-#else
-
 	if(bar_mapped){
 		xobj->pages = xocl_p2p_get_pages(xobj->bar_vmapping, xobj->base.size >> PAGE_SHIFT);
 	} else {
 		xobj->pages = drm_gem_get_pages(&xobj->base);
 	}
 
-#endif
 	if (IS_ERR(xobj->pages)) {
 		ret = PTR_ERR(xobj->pages);
 		goto out_free;

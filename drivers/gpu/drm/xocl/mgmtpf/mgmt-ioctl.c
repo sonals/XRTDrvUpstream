@@ -1,23 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /**
  *  Copyright (C) 2017 Xilinx, Inc. All rights reserved.
  *  Author: Sonal Santan
  *  Code copied verbatim from SDAccel xcldma kernel mode driver
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
  */
 
 #include "mgmt-core.h"
 
-static int err_info_ioctl(struct xclmgmt_dev *lro, void __user *arg) {
-
+static int err_info_ioctl(struct xclmgmt_dev *lro, void __user *arg)
+{
 	struct xclmgmt_err_info obj;
 	u32	val, level;
 	u64	t;
@@ -32,10 +24,9 @@ static int err_info_ioctl(struct xclmgmt_dev *lro, void __user *arg) {
 	}
 
 	obj.mNumFirewalls = val;
-	memset(obj.mAXIErrorStatus, 0, sizeof (obj.mAXIErrorStatus));
-	for(i = 0; i < obj.mNumFirewalls; ++i) {
+	memset(obj.mAXIErrorStatus, 0, sizeof(obj.mAXIErrorStatus));
+	for (i = 0; i < obj.mNumFirewalls; ++i)
 		obj.mAXIErrorStatus[i].mErrFirewallID = i;
-	}
 
 	xocl_af_get_prop(lro, XOCL_AF_PROP_DETECTED_LEVEL, &level);
 	if (level >= val) {

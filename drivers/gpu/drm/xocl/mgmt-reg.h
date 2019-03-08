@@ -1,25 +1,15 @@
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
+
 /**
- * Copyright (C) 2016-2017 Xilinx, Inc
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may
- * not use this file except in compliance with the License. A copy of the
- * License is located at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
+ * Copyright (C) 2016-2019 Xilinx, Inc
  */
 
 #ifndef _XCL_MGT_REG_H_
 #define _XCL_MGT_REG_H_
 
 
-#define KB(x)   ((unsigned) (x) << 10)
-#define MB(x)   ((unsigned) (x) << 20)
+#define KB(x)   ((unsigned int) (x) << 10)
+#define MB(x)   ((unsigned int) (x) << 20)
 
 enum PFO_BARS {
   USER_BAR = 0,
@@ -142,17 +132,17 @@ enum PFO_BARS {
  * ICAP Register definition
  */
 
-#define XHWICAP_GIER            HWICAP_BASE+0x1c
-#define XHWICAP_ISR             HWICAP_BASE+0x20
-#define XHWICAP_IER             HWICAP_BASE+0x28
-#define XHWICAP_WF              HWICAP_BASE+0x100
-#define XHWICAP_RF              HWICAP_BASE+0x104
-#define XHWICAP_SZ              HWICAP_BASE+0x108
-#define XHWICAP_CR              HWICAP_BASE+0x10c
-#define XHWICAP_SR              HWICAP_BASE+0x110
-#define XHWICAP_WFV             HWICAP_BASE+0x114
-#define XHWICAP_RFO             HWICAP_BASE+0x118
-#define XHWICAP_ASR             HWICAP_BASE+0x11c
+#define XHWICAP_GIER            (HWICAP_BASE+0x1c)
+#define XHWICAP_ISR             (HWICAP_BASE+0x20)
+#define XHWICAP_IER             (HWICAP_BASE+0x28)
+#define XHWICAP_WF              (HWICAP_BASE+0x100)
+#define XHWICAP_RF              (HWICAP_BASE+0x104)
+#define XHWICAP_SZ              (HWICAP_BASE+0x108)
+#define XHWICAP_CR              (HWICAP_BASE+0x10c)
+#define XHWICAP_SR              (HWICAP_BASE+0x110)
+#define XHWICAP_WFV             (HWICAP_BASE+0x114)
+#define XHWICAP_RFO             (HWICAP_BASE+0x118)
+#define XHWICAP_ASR             (HWICAP_BASE+0x11c)
 
 /**
  * Bitstream header information.
@@ -265,5 +255,3 @@ typedef struct {
 #define XCLMGMT_MAILBOX_INTR            11
 
 #endif
-
-

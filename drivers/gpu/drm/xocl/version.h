@@ -21,7 +21,7 @@ static const char xrt_modified_files[] = "";
 #include <iostream>
 #include <string>
 
-namespace xrt { 
+namespace xrt {
 
 class version {
  public:
@@ -32,7 +32,7 @@ class version {
      output << "      Build Version Hash: " << xrt_build_version_hash << std::endl;
      output << " Build Version Hash Date: " << xrt_build_version_hash_date << std::endl;
      output << "      Build Version Date: " << xrt_build_version_date_rfc << std::endl;
-  
+
      std::string modifiedFiles(xrt_modified_files);
      if ( !modifiedFiles.empty() ) {
         const std::string& delimiters = ",";      // Our delimiter
@@ -45,15 +45,15 @@ class version {
              output << "                          ";
           }
           output << runningIndex++ << ") ";
-  
+
           std::string::size_type pos = modifiedFiles.find_first_of(delimiters, lastPos);
-  
+
           if (pos == std::string::npos) {
             pos = modifiedFiles.length();
           }
-  
+
           output << modifiedFiles.substr(lastPos, pos-lastPos) << std::endl;
-  
+
           lastPos = pos + 1;
         }
      }
@@ -62,5 +62,4 @@ class version {
 }
 #endif
 
-#endif 
-
+#endif

@@ -1,17 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
 /**
- * Copyright (C) 2017 Xilinx, Inc.
+ * Copyright (C) 2017-2019 Xilinx, Inc.
  *
  * Author(s):
  * Sonal Santan <sonal.santan@xilinx.com>
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
  */
 
 #ifndef _XCL_MGT_PF_H_
@@ -53,10 +46,9 @@ struct xclmgmt_ioc_info;
 // List of processes that are using the mgmt driver
 // also saving the task
 struct proc_list {
-
 	struct list_head head;
-	struct pid 	 *pid;
-	bool		signaled;
+	struct pid      *pid;
+	bool		 signaled;
 };
 
 struct power_val {
@@ -107,10 +99,6 @@ struct xclmgmt_dev {
 	struct mutex busy_mutex;
 	struct mgmt_power power;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0)
-	/* msi-x vector/entry table */
-	struct msix_entry msix_irq_entries[XCLMGMT_MAX_INTR_NUM];
-#endif
 	int msix_user_start_vector;
 	bool ready;
 
@@ -125,10 +113,10 @@ void fill_frequency_info(struct xclmgmt_dev *lro, struct xclmgmt_ioc_info *obj);
 void device_info(struct xclmgmt_dev *lro, struct xclmgmt_ioc_info *obj);
 long mgmt_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
 void get_pcie_link_info(struct xclmgmt_dev *lro,
-	unsigned short *width, unsigned short *speed, bool is_cap);
+			unsigned short *width, unsigned short *speed, bool is_cap);
 
 // utils.c
-unsigned compute_unit_busy(struct xclmgmt_dev *lro);
+unsigned int compute_unit_busy(struct xclmgmt_dev *lro);
 int pci_fundamental_reset(struct xclmgmt_dev *lro);
 
 long reset_hot_ioctl(struct xclmgmt_dev *lro);

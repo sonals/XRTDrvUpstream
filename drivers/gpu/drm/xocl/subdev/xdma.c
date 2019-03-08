@@ -1,27 +1,17 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
- * A GEM style device manager for PCIe based OpenCL accelerators.
+ * A GEM style device manager for PCIe based accelerators.
  *
- * Copyright (C) 2016-2018 Xilinx, Inc. All rights reserved.
+ * Copyright (C) 2016-2019 Xilinx, Inc. All rights reserved.
  *
  * Authors:
- *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 /* XDMA version Memory Mapped DMA */
 
 #include <linux/version.h>
 #include <linux/eventfd.h>
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,0)
-#include <drm/drm_backport.h>
-#endif
 #include <drm/drmP.h>
 #include <drm/drm_gem.h>
 #include <drm/drm_mm.h>
