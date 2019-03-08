@@ -92,16 +92,16 @@ int xocl_user_intr_ioctl(struct drm_device *dev, void *data,
 char *kind_to_string(enum axlf_section_kind kind)
 {
 	switch (kind) {
-	case 0:  return "BITSTREAM";
-	case 1:  return "CLEARING_BITSTREAM";
-	case 2:  return "EMBEDDED_METADATA";
-	case 3:  return "FIRMWARE";
-	case 4:  return "DEBUG_DATA";
-	case 5:  return "SCHED_FIRMWARE";
-	case 6:  return "MEM_TOPOLOGY";
-	case 7:  return "CONNECTIVITY";
-	case 8:  return "IP_LAYOUT";
-	case 9:  return "DEBUG_IP_LAYOUT";
+	case 0:	 return "BITSTREAM";
+	case 1:	 return "CLEARING_BITSTREAM";
+	case 2:	 return "EMBEDDED_METADATA";
+	case 3:	 return "FIRMWARE";
+	case 4:	 return "DEBUG_DATA";
+	case 5:	 return "SCHED_FIRMWARE";
+	case 6:	 return "MEM_TOPOLOGY";
+	case 7:	 return "CONNECTIVITY";
+	case 8:	 return "IP_LAYOUT";
+	case 9:	 return "DEBUG_IP_LAYOUT";
 	case 10: return "DESIGN_CHECK_POINT";
 	case 11: return "CLOCK_FREQ_TOPOLOGY";
 	default: return "UNKNOWN";
@@ -287,12 +287,10 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 	if (xocl_is_aws(xdev) && (topology != NULL)) {
 		if ((size == sizeof_sect(topology, m_mem_data)) &&
 		    !memcmp(new_topology, topology, size)) {
-			xocl_xdev_info(xdev,"MEM_TOPOLOGY match,"
-				       "preserve mem_topology.");
+			xocl_xdev_info(xdev, "MEM_TOPOLOGY match, preserve mem_topology.");
 			preserve_mem = 1;
 		} else {
-			xocl_xdev_info(xdev, "MEM_TOPOLOGY mismatch,"
-				       "do not preserve mem_topology.");
+			xocl_xdev_info(xdev, "MEM_TOPOLOGY mismatch, do not preserve mem_topology.");
 		}
 	}
 
@@ -306,7 +304,7 @@ xocl_read_axlf_helper(struct xocl_drm *drm_p, struct drm_xocl_axlf *axlf_ptr)
 
 	err = xocl_icap_download_axlf(xdev, axlf);
 	if (err) {
-		userpf_err(xdev, "%s Fail to download \n", __func__);
+		userpf_err(xdev, "%s Fail to download\n", __func__);
 		/*
 		 * Don't just bail out here, always recreate drm mem
 		 * since we have cleaned it up before download.
@@ -357,8 +355,10 @@ int xocl_read_axlf_ioctl(struct drm_device *dev,
 	return err;
 }
 
-uint get_live_client_size(struct xocl_dev *xdev) {
+uint get_live_client_size(struct xocl_dev *xdev)
+{
 	uint count;
+
 	mutex_lock(&xdev->ctx_list_lock);
 	count = live_client_size(xdev);
 	mutex_unlock(&xdev->ctx_list_lock);
@@ -379,7 +379,7 @@ int xocl_hot_reset_ioctl(struct drm_device *dev, void *data,
 
 	int err = xocl_hot_reset(xdev, false);
 
-	printk(KERN_INFO "%s err: %d\n", __FUNCTION__, err);
+	printk(KERN_INFO "%s err: %d\n", __func__, err);
 	return err;
 }
 
@@ -390,6 +390,6 @@ int xocl_reclock_ioctl(struct drm_device *dev, void *data,
 	struct xocl_dev *xdev = drm_p->xdev;
 	int err = xocl_reclock(xdev, data);
 
-	printk(KERN_INFO "%s err: %d\n", __FUNCTION__, err);
+	printk(KERN_INFO "%s err: %d\n", __func__, err);
 	return err;
 }

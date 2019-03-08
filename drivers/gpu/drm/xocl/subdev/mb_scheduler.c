@@ -449,7 +449,7 @@ cmd_mark_deactive(struct xocl_cmd *xcmd)
  * This function looks at all incoming explicit BO dependencies, checks if a
  * corresponding xocl_cmd object exists (is active) in which case that command
  * object must chain argument xcmd so that it (xcmd) can be triggered when
- * dependency completes.  The chained command has a wait count correponding to
+ * dependency completes.  The chained command has a wait count corresponding to
  * the number of dependencies that are active.
  */
 static int
@@ -1697,7 +1697,7 @@ exec_ert_query_cmd(struct exec_core *exec, struct xocl_cmd *xcmd)
 /*
  * start_cmd() - Start execution of a command
  *
- * Return: true if succesfully started, false otherwise
+ * Return: true if successfully started, false otherwise
  *
  * Function dispatches based on penguin vs ert mode
  */
