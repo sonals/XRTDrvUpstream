@@ -25,9 +25,6 @@
 #include "../version.h"
 #include "../lib/libxdma_api.h"
 #include "common.h"
-#if RHEL_P2P_SUPPORT
-#include <linux/pfn_t.h>
-#endif
 
 #if defined(__PPC64__)
 #define XOCL_FILE_PAGE_OFFSET	0x10000
@@ -168,9 +165,6 @@ int xocl_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	loff_t num_pages;
 	unsigned int page_offset;
 	int ret = 0;
-#if RHEL_P2P_SUPPORT
-	pfn_t pfn;
-#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 	unsigned long vmf_address = vmf->address;
@@ -189,12 +183,7 @@ int xocl_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 		return VM_FAULT_SIGBUS;
 
 	if (xobj->type & XOCL_BO_P2P) {
-#if RHEL_P2P_SUPPORT
-		pfn = phys_to_pfn_t(page_to_phys(xobj->pages[page_offset]), PFN_MAP|PFN_DEV);
-		ret = vm_insert_mixed(vma, vmf_address, pfn);
-#else
 		ret = vm_insert_page(vma, vmf_address, xobj->pages[page_offset]);
-#endif
 	} else {
 		ret = vm_insert_page(vma, vmf_address, xobj->pages[page_offset]);
 	}

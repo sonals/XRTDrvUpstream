@@ -34,7 +34,7 @@ struct feature_rom {
 };
 
 static ssize_t VBNV_show(struct device *dev,
-    struct device_attribute *attr, char *buf)
+	struct device_attribute *attr, char *buf)
 {
 	struct feature_rom *rom = platform_get_drvdata(to_platform_device(dev));
 
@@ -43,12 +43,12 @@ static ssize_t VBNV_show(struct device *dev,
 static DEVICE_ATTR_RO(VBNV);
 
 static ssize_t dr_base_addr_show(struct device *dev,
-    struct device_attribute *attr, char *buf)
+	struct device_attribute *attr, char *buf)
 {
 	struct feature_rom *rom = platform_get_drvdata(to_platform_device(dev));
 
 	//TODO: Fix: DRBaseAddress no longer required in feature rom
-	if(rom->header.MajorVersion >= 10)
+	if (rom->header.MajorVersion >= 10)
 		return sprintf(buf, "%llu\n", rom->header.DRBaseAddress);
 	else
 		return sprintf(buf, "%u\n", 0);
@@ -56,7 +56,7 @@ static ssize_t dr_base_addr_show(struct device *dev,
 static DEVICE_ATTR_RO(dr_base_addr);
 
 static ssize_t ddr_bank_count_max_show(struct device *dev,
-    struct device_attribute *attr, char *buf)
+	struct device_attribute *attr, char *buf)
 {
 	struct feature_rom *rom = platform_get_drvdata(to_platform_device(dev));
 
@@ -65,7 +65,7 @@ static ssize_t ddr_bank_count_max_show(struct device *dev,
 static DEVICE_ATTR_RO(ddr_bank_count_max);
 
 static ssize_t ddr_bank_size_show(struct device *dev,
-    struct device_attribute *attr, char *buf)
+	struct device_attribute *attr, char *buf)
 {
 	struct feature_rom *rom = platform_get_drvdata(to_platform_device(dev));
 
@@ -74,7 +74,7 @@ static ssize_t ddr_bank_size_show(struct device *dev,
 static DEVICE_ATTR_RO(ddr_bank_size);
 
 static ssize_t timestamp_show(struct device *dev,
-    struct device_attribute *attr, char *buf)
+	struct device_attribute *attr, char *buf)
 {
 	struct feature_rom *rom = platform_get_drvdata(to_platform_device(dev));
 
@@ -83,7 +83,7 @@ static ssize_t timestamp_show(struct device *dev,
 static DEVICE_ATTR_RO(timestamp);
 
 static ssize_t FPGA_show(struct device *dev,
-    struct device_attribute *attr, char *buf)
+	struct device_attribute *attr, char *buf)
 {
 	struct feature_rom *rom = platform_get_drvdata(to_platform_device(dev));
 
@@ -145,7 +145,7 @@ static bool mb_sched_on(struct platform_device *pdev)
 	return rom->mb_sche_enabled && !XOCL_DSA_MB_SCHE_OFF(xocl_get_xdev(pdev));
 }
 
-static uint32_t* get_cdma_base_addresses(struct platform_device *pdev)
+static uint32_t *get_cdma_base_addresses(struct platform_device *pdev)
 {
 	struct feature_rom *rom;
 
@@ -225,7 +225,7 @@ static void get_raw_header(struct platform_device *pdev, void *header)
 	rom = platform_get_drvdata(pdev);
 	BUG_ON(!rom);
 
-	memcpy(header, &rom->header, sizeof (rom->header));
+	memcpy(header, &rom->header, sizeof(rom->header));
 }
 
 static struct xocl_rom_funcs rom_ops = {
@@ -272,9 +272,9 @@ static int feature_rom_probe(struct platform_device *pdev)
 			xocl_info(&pdev->dev,
 				"Found AWS VU9P Device without featureROM");
 			/*
- 			 * This is AWS device. Fill the FeatureROM struct.
- 			 * Right now it doesn't have FeatureROM
- 			 */
+			 * This is AWS device. Fill the FeatureROM struct.
+			 * Right now it doesn't have FeatureROM
+			 */
 			memset(rom->header.EntryPointString, 0,
 				sizeof(rom->header.EntryPointString));
 			strncpy(rom->header.EntryPointString, "xlnx", 4);
@@ -299,8 +299,8 @@ static int feature_rom_probe(struct platform_device *pdev)
 
 			xocl_info(&pdev->dev, "Enabling AWS dynamic 5.0 DSA");
 		} else {
-			xocl_err(&pdev->dev, "Magic number does not match, "
-			"actual 0x%x, expected 0x%x", val, MAGIC_NUM);
+			xocl_err(&pdev->dev, "Magic number does not match, actual 0x%x, expected 0x%x",
+					val, MAGIC_NUM);
 			ret = -ENODEV;
 			goto failed;
 		}
@@ -318,26 +318,26 @@ static int feature_rom_probe(struct platform_device *pdev)
 	}
 
 	rom->dsa_version = 0;
-	if (strstr(rom->header.VBNVName,"5_0"))
+	if (strstr(rom->header.VBNVName, "5_0"))
 		rom->dsa_version = 50;
-	else if (strstr(rom->header.VBNVName,"5_1")
-		 || strstr(rom->header.VBNVName,"u200_xdma_201820_1"))
+	else if (strstr(rom->header.VBNVName, "5_1")
+		 || strstr(rom->header.VBNVName, "u200_xdma_201820_1"))
 		rom->dsa_version = 51;
-	else if (strstr(rom->header.VBNVName,"5_2")
-		 || strstr(rom->header.VBNVName,"u200_xdma_201820_2")
-		 || strstr(rom->header.VBNVName,"u250_xdma_201820_1")
-		 || strstr(rom->header.VBNVName,"201830"))
+	else if (strstr(rom->header.VBNVName, "5_2")
+		 || strstr(rom->header.VBNVName, "u200_xdma_201820_2")
+		 || strstr(rom->header.VBNVName, "u250_xdma_201820_1")
+		 || strstr(rom->header.VBNVName, "201830"))
 		rom->dsa_version = 52;
-	else if (strstr(rom->header.VBNVName,"5_3"))
+	else if (strstr(rom->header.VBNVName, "5_3"))
 		rom->dsa_version = 53;
 
-	if(rom->header.FeatureBitMap & UNIFIED_PLATFORM)
+	if (rom->header.FeatureBitMap & UNIFIED_PLATFORM)
 		rom->unified = true;
 
-	if(rom->header.FeatureBitMap & BOARD_MGMT_ENBLD)
+	if (rom->header.FeatureBitMap & BOARD_MGMT_ENBLD)
 		rom->mb_mgmt_enabled = true;
 
-	if(rom->header.FeatureBitMap & MB_SCHEDULER)
+	if (rom->header.FeatureBitMap & MB_SCHEDULER)
 		rom->mb_sche_enabled = true;
 
 	ret = sysfs_create_group(&pdev->dev.kobj, &rom_attr_group);
@@ -407,7 +407,8 @@ static struct platform_driver	feature_rom_driver = {
 	.id_table = rom_id_table,
 };
 
-int __init xocl_init_feature_rom(void) {
+int __init xocl_init_feature_rom(void)
+{
 	return platform_driver_register(&feature_rom_driver);
 }
 

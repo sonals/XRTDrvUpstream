@@ -48,7 +48,7 @@ struct xocl_xdma {
 	 * Channel usage bitmasks, one for each direction
 	 * bit 1 indicates channel is free, bit 0 indicates channel is free
 	 */
-	volatile unsigned long	channel_bitmap[2];
+	unsigned long		channel_bitmap[2];
 	unsigned long long	*channel_usage[2];
 
 	struct mutex		stat_lock;
@@ -78,8 +78,8 @@ static ssize_t xdma_migrate_bo(struct platform_device *pdev,
 
 	xocl_err(&pdev->dev, "DMA failed, Dumping SG Page Table");
 	for (i = 0; i < nents; i++, sg = sg_next(sg)) {
-        if (!sg)
-            break;
+		if (!sg)
+			break;
 		pg = sg_page(sg);
 		if (!pg)
 			continue;
@@ -106,8 +106,8 @@ static int acquire_channel(struct platform_device *pdev, u32 dir)
 			&xdma->channel_bitmap[dir]);
 		if (result)
 			break;
-        }
-        if (!result) {
+	}
+	if (!result) {
 		// How is this possible?
 		up(&xdma->channel_sem[dir]);
 		channel = -EIO;
@@ -123,25 +123,25 @@ static void release_channel(struct platform_device *pdev, u32 dir, u32 channel)
 
 
 	xdma = platform_get_drvdata(pdev);
-        set_bit(channel, &xdma->channel_bitmap[dir]);
-        up(&xdma->channel_sem[dir]);
+	set_bit(channel, &xdma->channel_bitmap[dir]);
+	up(&xdma->channel_sem[dir]);
 }
 
 static u32 get_channel_count(struct platform_device *pdev)
 {
 	struct xocl_xdma *xdma;
 
-        xdma= platform_get_drvdata(pdev);
-        BUG_ON(!xdma);
+	xdma = platform_get_drvdata(pdev);
+	BUG_ON(!xdma);
 
-        return xdma->channel;
+	return xdma->channel;
 }
 
 static void *get_drm_handle(struct platform_device *pdev)
 {
 	struct xocl_xdma *xdma;
 
-	xdma= platform_get_drvdata(pdev);
+	xdma = platform_get_drvdata(pdev);
 
 	return xdma->drm;
 }
@@ -151,10 +151,10 @@ static u64 get_channel_stat(struct platform_device *pdev, u32 channel,
 {
 	struct xocl_xdma *xdma;
 
-        xdma= platform_get_drvdata(pdev);
-        BUG_ON(!xdma);
+	xdma = platform_get_drvdata(pdev);
+	BUG_ON(!xdma);
 
-        return xdma->channel_usage[write][channel];
+	return xdma->channel_usage[write][channel];
 }
 
 static int user_intr_config(struct platform_device *pdev, u32 intr, bool en)
@@ -163,7 +163,7 @@ static int user_intr_config(struct platform_device *pdev, u32 intr, bool en)
 	const unsigned int mask = 1 << intr;
 	int ret;
 
-	xdma= platform_get_drvdata(pdev);
+	xdma = platform_get_drvdata(pdev);
 
 	if (intr >= xdma->max_user_intr) {
 		xocl_err(&pdev->dev, "Invalid intr %d, user start %d, max %d",
@@ -195,9 +195,8 @@ static irqreturn_t xdma_isr(int irq, void *arg)
 	if (irq_entry->handler)
 		ret = irq_entry->handler(irq, irq_entry->arg);
 
-	if (!IS_ERR_OR_NULL(irq_entry->event_ctx)) {
+	if (!IS_ERR_OR_NULL(irq_entry->event_ctx))
 		eventfd_signal(irq_entry->event_ctx, 1);
-	}
 
 	return ret;
 }
@@ -208,7 +207,7 @@ static int user_intr_unreg(struct platform_device *pdev, u32 intr)
 	const unsigned int mask = 1 << intr;
 	int ret;
 
-	xdma= platform_get_drvdata(pdev);
+	xdma = platform_get_drvdata(pdev);
 
 	if (intr >= xdma->max_user_intr)
 		return -EINVAL;
@@ -242,7 +241,7 @@ static int user_intr_register(struct platform_device *pdev, u32 intr,
 	const unsigned int mask = 1 << intr;
 	int ret;
 
-	xdma= platform_get_drvdata(pdev);
+	xdma = platform_get_drvdata(pdev);
 
 	if (intr >= xdma->max_user_intr ||
 			(event_fd >= 0 && intr < xdma->start_user_intr)) {
@@ -335,9 +334,9 @@ static struct attribute_group xdma_attr_group = {
 static int set_max_chan(struct platform_device *pdev,
 		struct xocl_xdma *xdma)
 {
-	xdma->channel_usage[0] = devm_kzalloc(&pdev->dev, sizeof (u64) *
+	xdma->channel_usage[0] = devm_kzalloc(&pdev->dev, sizeof(u64) *
 		xdma->channel, GFP_KERNEL);
-	xdma->channel_usage[1] = devm_kzalloc(&pdev->dev, sizeof (u64) *
+	xdma->channel_usage[1] = devm_kzalloc(&pdev->dev, sizeof(u64) *
 		xdma->channel, GFP_KERNEL);
 	if (!xdma->channel_usage[0] || !xdma->channel_usage[1]) {
 		xocl_err(&pdev->dev, "failed to alloc channel usage");
@@ -366,7 +365,6 @@ static int xdma_probe(struct platform_device *pdev)
 
 	xdma = devm_kzalloc(&pdev->dev, sizeof(*xdma), GFP_KERNEL);
 	if (!xdma) {
-		xocl_err(&pdev->dev, "alloc xdma dev failed");
 		ret = -ENOMEM;
 		goto failed;
 	}
@@ -426,9 +424,8 @@ failed:
 			devm_kfree(&pdev->dev, xdma->channel_usage[0]);
 		if (xdma->channel_usage[1])
 			devm_kfree(&pdev->dev, xdma->channel_usage[1]);
-		if (xdma->user_msix_table) {
+		if (xdma->user_msix_table)
 			devm_kfree(&pdev->dev, xdma->user_msix_table);
-		}
 
 		devm_kfree(&pdev->dev, xdma);
 	}
@@ -467,7 +464,7 @@ static int xdma_remove(struct platform_device *pdev)
 				xocl_err(&pdev->dev,
 					"ERROR: Interrupt %d is still on", i);
 			}
-			if(!IS_ERR_OR_NULL(irq_entry->event_ctx))
+			if (!IS_ERR_OR_NULL(irq_entry->event_ctx))
 				eventfd_ctx_put(irq_entry->event_ctx);
 		}
 	}

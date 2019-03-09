@@ -24,7 +24,6 @@ xmgmt-y := \
 	../subdev/microblaze.o \
 	../subdev/firewall.o \
 	../subdev/xvc.o \
-	../subdev/xiic.o \
 	../subdev/mailbox.o \
 	../subdev/icap.o \
 	../subdev/mig.o \
