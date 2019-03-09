@@ -25,7 +25,7 @@
  * @returns: NULL if AER apability is not found walking up to the root port
  *         : pci_dev ptr to the port which is AER capable.
  */
-static struct pci_dev * find_aer_cap(struct pci_dev *bridge)
+static struct pci_dev *find_aer_cap(struct pci_dev *bridge)
 {
 	struct pci_dev *prev_bridge = bridge;
 	int cap;
@@ -68,7 +68,7 @@ static int pcie_mask_surprise_down(struct pci_dev *pdev, u32 *orig_mask)
 	printk(KERN_INFO "%s: pcie_mask_surprise_down \n", DRV_NAME);
 
 	bridge = find_aer_cap(bridge);
-	if(bridge) {
+	if (bridge) {
 		cap = pci_find_ext_capability(bridge, PCI_EXT_CAP_ID_ERR);
 		if (cap) {
 			pci_read_config_dword(bridge, cap + PCI_ERR_UNCOR_MASK, orig_mask);

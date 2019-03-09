@@ -75,7 +75,8 @@ struct firewall {
 static int clear_firewall(struct platform_device *pdev);
 static u32 check_firewall(struct platform_device *pdev, int *level);
 
-static int get_prop(struct platform_device *pdev, u32 prop, void *val) {
+static int get_prop(struct platform_device *pdev, u32 prop, void *val)
+{
 	struct firewall *fw;
 
 	fw = platform_get_drvdata(pdev);
@@ -148,7 +149,7 @@ static SENSOR_DEVICE_ATTR(detected_time, 0444, show_firewall, NULL,
 	XOCL_AF_PROP_DETECTED_TIME);
 
 static ssize_t clear_store(struct device *dev, struct device_attribute *da,
-        const char *buf, size_t count)
+	const char *buf, size_t count)
 {
 	struct platform_device *pdev = to_platform_device(dev);
 	u32 val = 0;
@@ -164,7 +165,7 @@ static ssize_t clear_store(struct device *dev, struct device_attribute *da,
 static DEVICE_ATTR_WO(clear);
 
 static ssize_t inject_store(struct device *dev, struct device_attribute *da,
-        const char *buf, size_t count)
+	const char *buf, size_t count)
 {
 	struct firewall *fw = platform_get_drvdata(to_platform_device(dev));
 
@@ -192,7 +193,7 @@ static u32 check_firewall(struct platform_device *pdev, int *level)
 {
 	struct firewall	*fw;
 //	struct timeval	time;
-        struct timespec64 now;
+	struct timespec64 now;
 	int	i;
 	u32	val = 0;
 
@@ -207,7 +208,7 @@ static u32 check_firewall(struct platform_device *pdev, int *level)
 			if (!fw->curr_status) {
 				fw->err_detected_status = val;
 				fw->err_detected_level = i;
-                                ktime_get_ts64(&now);
+				ktime_get_ts64(&now);
 // PORT4_20
 //				do_gettimeofday(&time);
 				fw->err_detected_time = (u64)(now.tv_sec -
@@ -231,7 +232,7 @@ static u32 check_firewall(struct platform_device *pdev, int *level)
 		fw->curr_status = 0x1;
 	}
 
-	return (fw->curr_status);
+	return fw->curr_status;
 }
 
 static int clear_firewall(struct platform_device *pdev)
@@ -307,26 +308,26 @@ static struct xocl_firewall_funcs fw_ops = {
 
 static int firewall_remove(struct platform_device *pdev)
 {
-        struct firewall *fw;
-        int     i;
+	struct firewall *fw;
+	int     i;
 
-        fw = platform_get_drvdata(pdev);
-        if (!fw) {
-                xocl_err(&pdev->dev, "driver data is NULL");
-                return -EINVAL;
-        }
+	fw = platform_get_drvdata(pdev);
+	if (!fw) {
+		xocl_err(&pdev->dev, "driver data is NULL");
+		return -EINVAL;
+	}
 
-        sysfs_remove_group(&pdev->dev.kobj, &firewall_attrgroup);
+	sysfs_remove_group(&pdev->dev.kobj, &firewall_attrgroup);
 
-        for (i = 0; i <= fw->max_level; i++) {
-                if (fw->base_addrs[i])
-                        iounmap(fw->base_addrs[i]);
-        }
+	for (i = 0; i <= fw->max_level; i++) {
+		if (fw->base_addrs[i])
+			iounmap(fw->base_addrs[i]);
+	}
 
-        platform_set_drvdata(pdev, NULL);
-        devm_kfree(&pdev->dev, fw);
+	platform_set_drvdata(pdev, NULL);
+	devm_kfree(&pdev->dev, fw);
 
-        return 0;
+	return 0;
 }
 
 static int firewall_probe(struct platform_device *pdev)
@@ -390,10 +391,12 @@ static struct platform_driver	firewall_driver = {
 	.id_table = firewall_id_table,
 };
 
-int __init xocl_init_firewall(void) {
+int __init xocl_init_firewall(void)
+{
 	return platform_driver_register(&firewall_driver);
 }
 
-void xocl_fini_firewall(void) {
+void xocl_fini_firewall(void)
+{
 	return platform_driver_unregister(&firewall_driver);
 }
