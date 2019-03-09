@@ -38,7 +38,7 @@ module_param(health_check, int, (S_IRUGO|S_IWUSR));
 MODULE_PARM_DESC(health_check,
 	"Enable health thread that checks the status of AXI Firewall and SYSMON. (0 = disable, 1 = enable)");
 
-int minimum_initialization = 0;
+int minimum_initialization;
 module_param(minimum_initialization, int, (S_IRUGO|S_IWUSR));
 MODULE_PARM_DESC(minimum_initialization,
 	"Enable minimum_initialization to force driver to load without vailid firmware or DSA. Thus xbsak flash is able to upgrade firmware. (0 = normal initialization, 1 = minimum initialization)");
@@ -50,7 +50,7 @@ MODULE_PARM_DESC(minimum_initialization,
 
 
 static dev_t xclmgmt_devnode;
-struct class *xrt_class = NULL;
+struct class *xrt_class;
 
 /*
  * Called when the device goes from unused to used.
