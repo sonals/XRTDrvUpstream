@@ -1,20 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * sysfs for the device attributes.
  *
- * Copyright (C) 2016-2017 Xilinx, Inc. All rights reserved.
+ * Copyright (C) 2016-2019 Xilinx, Inc. All rights reserved.
  *
  * Authors:
  *    Lizhi Hou <lizhih@xilinx.com>
  *    Umang Parekh <umang.parekh@xilinx.com>
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/hwmon.h>
@@ -36,8 +30,8 @@ static ssize_t error_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
-	ssize_t count;
-	count = sprintf(buf, "%s\n", lro->core.ebuf);
+	ssize_t count = sprintf(buf, "%s\n", lro->core.ebuf);
+
 	lro->core.ebuf[0] = 0;
 	return count;
 }
@@ -47,6 +41,7 @@ static ssize_t userbar_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%d\n", lro->core.bar_idx);
 }
 static DEVICE_ATTR_RO(userbar);
@@ -55,6 +50,7 @@ static ssize_t flash_type_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%s\n",
 		lro->core.priv.flash_type ? lro->core.priv.flash_type : "");
 }
@@ -64,6 +60,7 @@ static ssize_t board_name_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%s\n",
 		lro->core.priv.board_name ? lro->core.priv.board_name : "");
 }
@@ -73,6 +70,7 @@ static ssize_t mfg_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%d\n", (lro->core.priv.flags & XOCL_DSAFLAG_MFG) != 0);
 }
 static DEVICE_ATTR_RO(mfg);
@@ -81,6 +79,7 @@ static ssize_t feature_rom_offset_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%llu\n", lro->core.feature_rom_offset);
 }
 static DEVICE_ATTR_RO(feature_rom_offset);
@@ -98,7 +97,8 @@ static ssize_t version_show(struct device *dev,
 {
 	u32 major, minor, patch;
 
-	sscanf(XRT_DRIVER_VERSION, "%d.%d.%d", &major, &minor, &patch);
+	if (sscanf(XRT_DRIVER_VERSION, "%d.%d.%d", &major, &minor, &patch) != 3)
+		return 0;
 	return sprintf(buf, "%d\n", XOCL_DRV_VER_NUM(major, minor, patch));
 }
 static DEVICE_ATTR_RO(version);
@@ -107,6 +107,7 @@ static ssize_t slot_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%d\n", PCI_SLOT(lro->core.pdev->devfn));
 }
 static DEVICE_ATTR_RO(slot);
@@ -159,6 +160,7 @@ static ssize_t mig_calibration_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%d\n",
 		lro->ready ? MGMT_READ_REG32(lro, GENERAL_STATUS_BASE) : 0);
 }
@@ -168,6 +170,7 @@ static ssize_t xpr_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%d\n", XOCL_DSA_XPR_ON(lro));
 }
 static DEVICE_ATTR_RO(xpr);
@@ -176,6 +179,7 @@ static ssize_t ready_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
+
 	return sprintf(buf, "%d\n", lro->ready);
 }
 static DEVICE_ATTR_RO(ready);
@@ -184,7 +188,6 @@ static ssize_t dev_offline_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	struct xclmgmt_dev *lro = dev_get_drvdata(dev);
-
 	int val = lro->core.offline ? 1 : 0;
 
 	return sprintf(buf, "%d\n", val);
@@ -197,9 +200,8 @@ static ssize_t dev_offline_store(struct device *dev,
 	int ret;
 	u32 offline;
 
-	if (kstrtou32(buf, 10, &offline) == -EINVAL || offline > 1) {
+	if (kstrtou32(buf, 10, &offline) == -EINVAL || offline > 1)
 		return -EINVAL;
-	}
 
 	device_lock(dev);
 	if (offline) {
@@ -240,9 +242,9 @@ static ssize_t subdev_online_store(struct device *dev,
 
 	device_lock(dev);
 	ret = xocl_subdev_create_by_name(lro, name);
-	if (ret) {
+	if (ret)
 		xocl_err(dev, "create subdev by name failed");
-	} else
+	else
 		ret = count;
 	device_unlock(dev);
 
@@ -260,9 +262,9 @@ static ssize_t subdev_offline_store(struct device *dev,
 
 	device_lock(dev);
 	ret = xocl_subdev_destroy_by_name(lro, name);
-	if (ret) {
+	if (ret)
 		xocl_err(dev, "destroy subdev by name failed");
-	} else
+	else
 		ret = count;
 	device_unlock(dev);
 

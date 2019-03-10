@@ -49,7 +49,8 @@ static int err_info_ioctl(struct xclmgmt_dev *lro, void __user *arg)
 static int version_ioctl(struct xclmgmt_dev *lro, void __user *arg)
 {
 	struct xclmgmt_ioc_info obj;
-	printk(KERN_INFO "%s: %s \n", DRV_NAME, __FUNCTION__);
+
+	mgmt_info(lro, "%s: %s\n", DRV_NAME, __func__);
 	device_info(lro, &obj);
 	if (copy_to_user(arg, &obj, sizeof(struct xclmgmt_ioc_info)))
 		return -EFAULT;
@@ -116,8 +117,7 @@ long mgmt_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		result = version_ioctl(lro, (void __user *)arg);
 		break;
 	case XCLMGMT_IOCICAPDOWNLOAD:
-		printk(KERN_ERR
-			"Bitstream ioctl with legacy bitstream not supported") ;
+		mgmt_err(lro, "Bitstream ioctl with legacy bitstream not supported");
 		result = -EINVAL;
 		break;
 	case XCLMGMT_IOCICAPDOWNLOAD_AXLF:
@@ -139,7 +139,7 @@ long mgmt_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		result = err_info_ioctl(lro, (void __user *)arg);
 		break;
 	default:
-		printk(KERN_DEBUG "MGMT default IOCTL request %u\n", cmd & 0xff);
+		mgmt_info(lro, "MGMT default IOCTL request %u\n", cmd & 0xff);
 		result = -ENOTTY;
 	}
 

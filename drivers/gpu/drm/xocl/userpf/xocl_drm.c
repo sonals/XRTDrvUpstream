@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
@@ -5,20 +7,9 @@
  *
  * Authors:
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
- * GNU General Public License for more details.
  */
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(3, 0, 0)
-#include <drm/drm_backport.h>
-#endif
 #include <drm/drmP.h>
 #include <drm/drm_gem.h>
 #include <drm/drm_mm.h>
@@ -153,24 +144,14 @@ static int xocl_mmap(struct file *filp, struct vm_area_struct *vma)
 	return ret;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 int xocl_gem_fault(struct vm_fault *vmf)
 {
-	struct vm_area_struct *vma = vmf->vma;
-#else
-int xocl_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-{
-#endif
-	struct drm_xocl_bo *xobj = to_xocl_bo(vma->vm_private_data);
 	loff_t num_pages;
 	unsigned int page_offset;
+	struct vm_area_struct *vma = vmf->vma;
+	struct drm_xocl_bo *xobj = to_xocl_bo(vma->vm_private_data);
 	int ret = 0;
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 	unsigned long vmf_address = vmf->address;
-#else
-	unsigned long vmf_address = (unsigned long)vmf->virtual_address;
-#endif
 
 	page_offset = (vmf_address - vma->vm_start) >> PAGE_SHIFT;
 
@@ -182,11 +163,11 @@ int xocl_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 	if (page_offset > num_pages)
 		return VM_FAULT_SIGBUS;
 
-	if (xobj->type & XOCL_BO_P2P) {
+	if (xobj->type & XOCL_BO_P2P)
 		ret = vm_insert_page(vma, vmf_address, xobj->pages[page_offset]);
-	} else {
+	else
 		ret = vm_insert_page(vma, vmf_address, xobj->pages[page_offset]);
-	}
+
 	switch (ret) {
 	case -EAGAIN:
 	case 0:
@@ -329,9 +310,6 @@ static struct drm_driver mm_drm_driver = {
 	.prime_fd_to_handle		= drm_gem_prime_fd_to_handle,
 	.gem_prime_import		= drm_gem_prime_import,
 	.gem_prime_export		= drm_gem_prime_export,
-#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)) && (LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)))
-	.set_busid			= drm_pci_set_busid,
-#endif
 	.name				= XOCL_MODULE_NAME,
 	.desc				= XOCL_DRIVER_DESC,
 	.date				= driver_date,
@@ -349,6 +327,7 @@ void *xocl_drm_init(xdev_handle_t xdev_hdl)
 		&mm_drm_driver.major,
 		&mm_drm_driver.minor,
 		&mm_drm_driver.patchlevel);
+
 	sscanf(xrt_build_version_date, "%d-%d-%d ", &year, &mon, &day);
 	snprintf(driver_date, sizeof(driver_date),
 		"%d%02d%02d", year, mon, day);
@@ -379,19 +358,9 @@ void *xocl_drm_init(xdev_handle_t xdev_hdl)
 
 	drm_p->ddev = ddev;
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 0)
-	ret = drm_dev_set_unique(ddev, dev_name(ddev->dev));
-	if (ret) {
-		xocl_xdev_err(xdev_hdl, "set unique name failed 0x%x", ret);
-		goto failed;
-	}
-#endif
-
 	mutex_init(&drm_p->mm_lock);
 	ddev->dev_private = drm_p;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 	hash_init(drm_p->mm_range);
-#endif
 
 	xocl_drvinst_set_filedev(drm_p, ddev);
 	return drm_p;
@@ -476,7 +445,6 @@ int xocl_check_topology(struct xocl_drm *drm_p)
 
 uint32_t xocl_get_shared_ddr(struct xocl_drm *drm_p, struct mem_data *m_data)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 	struct xocl_mm_wrapper *wrapper;
 	uint64_t start_addr = m_data->m_base_address;
 	uint64_t sz = m_data->m_size*1024;
@@ -492,7 +460,6 @@ uint32_t xocl_get_shared_ddr(struct xocl_drm *drm_p, struct mem_data *m_data)
 				return 0xffffffff;
 		}
 	}
-#endif
 	return 0xffffffff;
 }
 
@@ -501,10 +468,8 @@ void xocl_cleanup_mem(struct xocl_drm *drm_p)
 	struct mem_topology *topology;
 	u16 i, ddr;
 	uint64_t addr;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 	struct xocl_mm_wrapper *wrapper;
 	struct hlist_node *tmp;
-#endif
 
 	topology = XOCL_MEM_TOPOLOGY(drm_p->xdev);
 	if (topology) {
@@ -518,7 +483,7 @@ void xocl_cleanup_mem(struct xocl_drm *drm_p)
 
 			xocl_info(drm_p->ddev->dev, "Taking down DDR : %d", i);
 			addr = topology->m_mem_data[i].m_base_address;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
+
 			hash_for_each_possible_safe(drm_p->mm_range, wrapper,
 					tmp, node, addr) {
 				if (wrapper->ddr == i) {
@@ -529,7 +494,7 @@ void xocl_cleanup_mem(struct xocl_drm *drm_p)
 					vfree(drm_p->mm_usage_stat[i]);
 				}
 			}
-#endif
+
 			drm_p->mm[i] = NULL;
 			drm_p->mm_usage_stat[i] = NULL;
 		}
@@ -644,9 +609,7 @@ int xocl_init_mem(struct xocl_drm *drm_p)
 		wrapper->mm = drm_p->mm[i];
 		wrapper->mm_usage_stat = drm_p->mm_usage_stat[i];
 		wrapper->ddr = i;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 		hash_add(drm_p->mm_range, &wrapper->node, wrapper->start_addr);
-#endif
 
 		drm_mm_init(drm_p->mm[i], mem_data->m_base_address,
 				ddr_bank_size - reserved1 - reserved2);

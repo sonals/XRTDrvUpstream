@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
@@ -5,14 +7,6 @@
  *
  * Authors: chienwei@xilinx.com
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/hwmon.h>
@@ -172,7 +166,7 @@ static void xmc_read_from_peer(struct platform_device *pdev, enum data_kind kind
 	struct mailbox_req *mb_req = NULL;
 	size_t reqlen = sizeof(struct mailbox_req) + data_len;
 
-	mb_req = (struct mailbox_req *)vmalloc(reqlen);
+	mb_req = vmalloc(reqlen);
 	if (!mb_req)
 		return;
 
@@ -190,31 +184,31 @@ static void xmc_read_from_peer(struct platform_device *pdev, enum data_kind kind
 static void safe_read32(struct xocl_xmc *xmc, u32 reg, u32 *val)
 {
 	mutex_lock(&xmc->xmc_lock);
-	if (xmc->enabled && xmc->state == XMC_STATE_ENABLED) {
+	if (xmc->enabled && xmc->state == XMC_STATE_ENABLED)
 		*val = READ_REG32(xmc, reg);
-	} else {
+	else
 		*val = 0;
-	}
+
 	mutex_unlock(&xmc->xmc_lock);
 }
 
 static void safe_write32(struct xocl_xmc *xmc, u32 reg, u32 val)
 {
 	mutex_lock(&xmc->xmc_lock);
-	if (xmc->enabled && xmc->state == XMC_STATE_ENABLED) {
+	if (xmc->enabled && xmc->state == XMC_STATE_ENABLED)
 		WRITE_REG32(xmc, val, reg);
-	}
+
 	mutex_unlock(&xmc->xmc_lock);
 }
 
 static void safe_read_from_peer(struct xocl_xmc *xmc, struct platform_device *pdev, enum data_kind kind, u32 *val)
 {
 	mutex_lock(&xmc->xmc_lock);
-	if (xmc->enabled) {
+	if (xmc->enabled)
 		xmc_read_from_peer(pdev, kind, val, sizeof(u32));
-	} else {
+	else
 		*val = 0;
-	}
+
 	mutex_unlock(&xmc->xmc_lock);
 }
 
@@ -222,6 +216,7 @@ static int xmc_get_data(struct platform_device *pdev, enum data_kind kind)
 {
 	struct xocl_xmc *xmc = platform_get_drvdata(pdev);
 	int val;
+
 	if (XMC_PRIVILEGED(xmc)) {
 		switch (kind) {
 		case VOL_12V_PEX:
@@ -242,9 +237,8 @@ static ssize_t xmc_12v_pex_vol_show(struct device *dev, struct device_attribute 
 
 	if (XMC_PRIVILEGED(xmc))
 		safe_read32(xmc, XMC_12V_PEX_REG+sizeof(u32)*VOLTAGE_INS, &pes_val);
-	else{
+	else
 		safe_read_from_peer(xmc, to_platform_device(dev), VOL_12V_PEX, &pes_val);
-	}
 
 	return sprintf(buf, "%d\n", pes_val);
 }
@@ -729,9 +723,8 @@ static ssize_t pause_store(struct device *dev,
 	struct xocl_xmc *xmc = platform_get_drvdata(to_platform_device(dev));
 	u32 val;
 
-	if (kstrtou32(buf, 10, &val) == -EINVAL || val > 1) {
+	if (kstrtou32(buf, 10, &val) == -EINVAL || val > 1)
 		return -EINVAL;
-	}
 
 	val = val ? CTL_MASK_PAUSE : 0;
 	safe_write32(xmc, XMC_CONTROL_REG, val);
@@ -746,14 +739,11 @@ static ssize_t reset_store(struct device *dev,
 	struct xocl_xmc *xmc = platform_get_drvdata(to_platform_device(dev));
 	u32 val;
 
-	if (kstrtou32(buf, 10, &val) == -EINVAL || val > 1) {
+	if (kstrtou32(buf, 10, &val) == -EINVAL || val > 1)
 		return -EINVAL;
-	}
 
-	if (val) {
+	if (val)
 		load_xmc(xmc);
-	}
-
 
 	return count;
 }
@@ -851,10 +841,10 @@ static int get_temp_by_m_tag(struct xocl_xmc *xmc, char *m_tag)
 		temp[digit_len] = '\0';
 		//convert to signed long, decimal base
 		if (kstrtol(temp, 10, &idx) == 0 && idx < 4 && idx >= 0)
-			safe_read32(xmc, XMC_DIMM_TEMP0_REG + (3*sizeof(int32_t)) * idx + sizeof(u32)*VOLTAGE_INS, &ret);
-		else{
+			safe_read32(xmc, XMC_DIMM_TEMP0_REG + (3*sizeof(int32_t)) * idx +
+				    sizeof(u32)*VOLTAGE_INS, &ret);
+		else
 			ret = 0;
-		}
 	}
 
 	return ret;
@@ -936,9 +926,8 @@ static ssize_t read_temp_by_mem_topology(struct file *filp, struct kobject *kobj
 	if (offset >= size)
 		return 0;
 
-	for (i = 0; i < memtopo->m_count; ++i) {
+	for (i = 0; i < memtopo->m_count; ++i)
 		*(temp+i) = get_temp_by_m_tag(xmc, memtopo->m_mem_data[i].m_tag);
-	}
 
 	if (count < size - offset)
 		nread = count;
@@ -1041,9 +1030,8 @@ static void mgmt_sysfs_destroy_xmc(struct platform_device *pdev)
 
 	xmc = platform_get_drvdata(pdev);
 
-	if (!xmc->enabled) {
+	if (!xmc->enabled)
 		return;
-	}
 
 	if (xmc->hwmon_dev) {
 		device_remove_file(xmc->hwmon_dev, &name_attr.dev_attr);
@@ -1053,7 +1041,7 @@ static void mgmt_sysfs_destroy_xmc(struct platform_device *pdev)
 		xmc->hwmon_dev = NULL;
 	}
 
-  sysfs_remove_group(&pdev->dev.kobj, &xmc_attr_group);
+	sysfs_remove_group(&pdev->dev.kobj, &xmc_attr_group);
 }
 
 static int mgmt_sysfs_create_xmc(struct platform_device *pdev)
@@ -1061,12 +1049,12 @@ static int mgmt_sysfs_create_xmc(struct platform_device *pdev)
 	struct xocl_xmc *xmc;
 	struct xocl_dev_core *core;
 	int err;
+
 	xmc = platform_get_drvdata(pdev);
 	core = XDEV(xocl_get_xdev(pdev));
 
-	if (!xmc->enabled) {
+	if (!xmc->enabled)
 		return 0;
-	}
 
 	err = sysfs_create_group(&pdev->dev.kobj, &xmc_attr_group);
 	if (err) {
@@ -1231,10 +1219,8 @@ static int load_xmc(struct xocl_xmc *xmc)
 	int ret = 0;
 	void *xdev_hdl;
 
-	if (!xmc->enabled) {
+	if (!xmc->enabled)
 		return -ENODEV;
-	}
-
 
 	mutex_lock(&xmc->xmc_lock);
 
@@ -1269,7 +1255,8 @@ static int load_xmc(struct xocl_xmc *xmc)
 	}
 
 	/* Wait for XMC to start
-	 * Note that ERT will start long before XMC so we don't check anything */
+	 * Note that ERT will start long before XMC so we don't check anything
+	 */
 	reg_val = READ_REG32(xmc, XMC_STATUS_REG);
 	if (!(reg_val & STATUS_MASK_INIT_DONE)) {
 		xocl_info(&xmc->pdev->dev, "Waiting for XMC to finish init...");
@@ -1334,9 +1321,8 @@ static int load_mgmt_image(struct platform_device *pdev, const char *image,
 
 	binary = xmc->mgmt_binary;
 	xmc->mgmt_binary = devm_kzalloc(&pdev->dev, len, GFP_KERNEL);
-	if (!xmc->mgmt_binary) {
+	if (!xmc->mgmt_binary)
 		return -ENOMEM;
-	}
 
 	if (binary)
 		devm_kfree(&pdev->dev, binary);
@@ -1361,9 +1347,8 @@ static int load_sche_image(struct platform_device *pdev, const char *image,
 
 	binary = xmc->sche_binary;
 	xmc->sche_binary = devm_kzalloc(&pdev->dev, len, GFP_KERNEL);
-	if (!xmc->sche_binary) {
+	if (!xmc->sche_binary)
 		return -ENOMEM;
-	}
 
 	if (binary)
 		devm_kfree(&pdev->dev, binary);
@@ -1387,9 +1372,8 @@ static int xmc_remove(struct platform_device *pdev)
 	int	i;
 
 	xmc = platform_get_drvdata(pdev);
-	if (!xmc) {
+	if (!xmc)
 		return 0;
-	}
 
 	if (xmc->mgmt_binary)
 		devm_kfree(&pdev->dev, xmc->mgmt_binary);

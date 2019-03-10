@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *

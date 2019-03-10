@@ -1,22 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 OR Apache-2.0 */
+
 /*******************************************************************************
  *
  * Xilinx XDMA IP Core Linux Driver
- * Copyright(c) 2015 - 2017 Xilinx, Inc.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * The full GNU General Public License is included in this distribution in
- * the file called "LICENSE".
+ * Copyright(c) 2015 - 2019 Xilinx, Inc.
  *
  * Karen Xie <karen.xie@xilinx.com>
  *
@@ -74,5 +61,3 @@ struct xdma_performance_ioctl {
 #define IOCTL_XDMA_ALIGN_GET    _IOR('q', 6, int)
 
 #endif /* _XDMA_IOCALLS_POSIX_H_ */
-
-

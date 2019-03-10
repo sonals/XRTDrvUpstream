@@ -37,7 +37,7 @@
 
 static const struct pci_device_id pciidlist[] = XOCL_USER_PCI_IDS;
 
-struct class *xrt_class = NULL;
+struct class *xrt_class;
 
 MODULE_DEVICE_TABLE(pci, pciidlist);
 
@@ -436,8 +436,7 @@ int xocl_pci_resize_resource(struct pci_dev *dev, int resno, int size)
 	}
 
 	if (i == PCI_BRIDGE_RESOURCE_NUM) {
-		xocl_err(&dev->dev, "Not enough IO Mem space, "
-			"Please check BIOS settings. ");
+		xocl_err(&dev->dev, "Not enough IO Mem space, Please check BIOS settings. ");
 		return -ENOSPC;
 	}
 	pci_release_selected_regions(dev, (1 << resno));
@@ -715,6 +714,7 @@ failed:
 		xocl_drv_unreg_funcs[i]();
 
 	class_destroy(xrt_class);
+	xrt_class = NULL;
 
 err_class_create:
 	return ret;
@@ -730,6 +730,7 @@ static void __exit xocl_exit(void)
 		xocl_drv_unreg_funcs[i]();
 
 	class_destroy(xrt_class);
+	xrt_class = NULL;
 }
 
 module_init(xocl_init);

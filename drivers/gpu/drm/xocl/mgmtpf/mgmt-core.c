@@ -195,7 +195,8 @@ void device_info(struct xclmgmt_dev *lro, struct xclmgmt_ioc_info *obj)
 	struct FeatureRomHeader rom;
 
 	memset(obj, 0, sizeof(struct xclmgmt_ioc_info));
-	sscanf(XRT_DRIVER_VERSION, "%d.%d.%d", &major, &minor, &patch);
+	if (sscanf(XRT_DRIVER_VERSION, "%d.%d.%d", &major, &minor, &patch) != 3)
+		return;
 
 	obj->vendor = lro->core.pdev->vendor;
 	obj->device = lro->core.pdev->device;
@@ -205,7 +206,7 @@ void device_info(struct xclmgmt_dev *lro, struct xclmgmt_ioc_info *obj)
 	obj->pci_slot = PCI_SLOT(lro->core.pdev->devfn);
 
 	val = MGMT_READ_REG32(lro, GENERAL_STATUS_BASE);
-	mgmt_info(lro, "MIG Calibration: %d \n", val);
+	mgmt_info(lro, "MIG Calibration: %d\n", val);
 
 	obj->mig_calibration[0] = (val & BIT(0)) ? true : false;
 	obj->mig_calibration[1] = obj->mig_calibration[0];
@@ -298,7 +299,7 @@ static int bridge_mmap(struct file *file, struct vm_area_struct *vma)
 /*
  * character device file operations for control bus (through control bridge)
  */
-static struct file_operations ctrl_fops = {
+static const struct file_operations ctrl_fops = {
 	.owner = THIS_MODULE,
 	.open = char_open,
 	.release = char_close,
@@ -331,7 +332,7 @@ static int create_char(struct xclmgmt_dev *lro)
 	rc = cdev_add(lro_char->cdev, lro_char->cdev->dev, 1);
 	if (rc < 0) {
 		memset(lro_char, 0, sizeof(*lro_char));
-		printk(KERN_INFO "cdev_add() = %d\n", rc);
+		mgmt_info(lro, "cdev_add() = %d\n", rc);
 		goto fail_add;
 	}
 
@@ -481,7 +482,7 @@ static int xclmgmt_setup_msix(struct xclmgmt_dev *lro)
 	rv = pci_alloc_irq_vectors(lro->core.pdev, total, total, PCI_IRQ_MSIX);
 	if (rv == total)
 		rv = 0;
-	printk(KERN_INFO "setting up msix, total irqs: %d, rv=%d\n", total, rv);
+	mgmt_info(lro, "setting up msix, total irqs: %d, rv=%d\n", total, rv);
 	return rv;
 }
 
@@ -541,6 +542,7 @@ static int xclmgmt_read_subdev_req(struct xclmgmt_dev *lro, char *data_ptr, void
 	size_t resp_sz = 0;
 	void *ptr = NULL;
 	struct mailbox_subdev_peer *subdev_req = (struct mailbox_subdev_peer *)data_ptr;
+
 	switch (subdev_req->kind) {
 	case VOL_12V_PEX:
 		val = xocl_xmc_get_data(lro, subdev_req->kind);
@@ -582,18 +584,19 @@ static void xclmgmt_mailbox_srv(void *arg, void *data, size_t len,
 	struct mailbox_req_bitstream_lock *bitstm_lock = NULL;
 	struct mailbox_bitstream_kaddr *mb_kaddr = NULL;
 	void *resp = NULL;
+
 	bitstm_lock =	(struct mailbox_req_bitstream_lock *)req->data;
 
 	if (err != 0)
 		return;
 
-	printk(KERN_INFO "%s received request (%d) from peer\n", __func__, req->req);
+	mgmt_info(lro, "%s received request (%d) from peer\n", __func__, req->req);
 
 	switch (req->req) {
 	case MAILBOX_REQ_LOCK_BITSTREAM:
 		ret = xocl_icap_lock_bitstream(lro, &bitstm_lock->uuid,
 			0);
-		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
+		(void) xocl_peer_response(lro, msgid, &ret, sizeof(ret));
 		break;
 	case MAILBOX_REQ_UNLOCK_BITSTREAM:
 		ret = xocl_icap_unlock_bitstream(lro, &bitstm_lock->uuid,
@@ -601,20 +604,20 @@ static void xclmgmt_mailbox_srv(void *arg, void *data, size_t len,
 		break;
 	case MAILBOX_REQ_HOT_RESET:
 		ret = (int) reset_hot_ioctl(lro);
-		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
+		(void) xocl_peer_response(lro, msgid, &ret, sizeof(ret));
 		break;
 	case MAILBOX_REQ_LOAD_XCLBIN_KADDR:
 		mb_kaddr = (struct mailbox_bitstream_kaddr *)req->data;
 		ret = xocl_icap_download_axlf(lro, (void *)mb_kaddr->addr);
-		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
+		(void) xocl_peer_response(lro, msgid, &ret, sizeof(ret));
 		break;
 	case MAILBOX_REQ_LOAD_XCLBIN:
 		ret = xocl_icap_download_axlf(lro, req->data);
-		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
+		(void) xocl_peer_response(lro, msgid, &ret, sizeof(ret));
 		break;
 	case MAILBOX_REQ_RECLOCK:
 		ret = xocl_icap_ocl_update_clock_freq_topology(lro, (struct xclmgmt_ioc_freqscaling *)req->data);
-		(void) xocl_peer_response(lro, msgid, &ret, sizeof (ret));
+		(void) xocl_peer_response(lro, msgid, &ret, sizeof(ret));
 		break;
 	case MAILBOX_REQ_PEER_DATA:
 		ret = xclmgmt_read_subdev_req(lro, req->data, &resp, &sz);
@@ -940,9 +943,9 @@ static void xclmgmt_exit(void)
 	pr_info(DRV_NAME" exit()\n");
 	pci_unregister_driver(&xclmgmt_driver);
 
-	for (i = ARRAY_SIZE(drv_unreg_funcs) - 1; i >= 0; i--) {
+	for (i = ARRAY_SIZE(drv_unreg_funcs) - 1; i >= 0; i--)
 		drv_unreg_funcs[i]();
-	}
+
 	/* unregister this driver from the PCI bus driver */
 	unregister_chrdev_region(xclmgmt_devnode, XOCL_MAX_DEVICES);
 	class_destroy(xrt_class);

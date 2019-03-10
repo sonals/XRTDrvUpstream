@@ -1,18 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
- * Copyright (C) 2018 Xilinx, Inc. All rights reserved.
+ * Copyright (C) 2018-2019 Xilinx, Inc. All rights reserved.
  *
  * Authors: Chien-Wei Lan <chienwei@xilinx.com>
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/hwmon.h>
@@ -47,6 +41,7 @@ static ssize_t ecc_ue_ffa_show(struct device *dev, struct device_attribute *da,
 	char *buf)
 {
 	uint64_t val = ioread32(MIG_DEV2BASE(dev) + UE_ADDR_HI);
+
 	val <<= 32;
 	val |= ioread32(MIG_DEV2BASE(dev) + UE_ADDR_LO);
 	return sprintf(buf, "0x%llx\n", val);
@@ -58,6 +53,7 @@ static ssize_t ecc_ce_ffa_show(struct device *dev, struct device_attribute *da,
 	char *buf)
 {
 	uint64_t val = ioread32(MIG_DEV2BASE(dev) + CE_ADDR_HI);
+
 	val <<= 32;
 	val |= ioread32(MIG_DEV2BASE(dev) + CE_ADDR_LO);
 	return sprintf(buf, "0x%llx\n", val);

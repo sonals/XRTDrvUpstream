@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
@@ -20,10 +22,10 @@
 #include "../xocl_drv.h"
 #include <drm/xmgmt_drm.h>
 
-#define TEMP 		0x400 		// TEMPOERATURE REGISTER ADDRESS
-#define VCCINT		0x404 		// VCCINT REGISTER OFFSET
-#define VCCAUX		0x408 		// VCCAUX REGISTER OFFSET
-#define VCCBRAM		0x418 		// VCCBRAM REGISTER OFFSET
+#define TEMP		0x400		// TEMPOERATURE REGISTER ADDRESS
+#define VCCINT		0x404		// VCCINT REGISTER OFFSET
+#define VCCAUX		0x408		// VCCAUX REGISTER OFFSET
+#define VCCBRAM		0x418		// VCCBRAM REGISTER OFFSET
 #define	TEMP_MAX	0x480
 #define	VCCINT_MAX	0x484
 #define	VCCAUX_MAX	0x488
@@ -193,30 +195,30 @@ static struct sensor_device_attribute sysmon_name_attr =
 	SENSOR_ATTR(name, 0444, show_name, NULL, 0);
 
 static ssize_t temp_show(struct device *dev, struct device_attribute *da,
-    char *buf)
+			 char *buf)
 {
-    return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_TEMP, buf);
+	return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_TEMP, buf);
 }
 static DEVICE_ATTR_RO(temp);
 
 static ssize_t vcc_int_show(struct device *dev, struct device_attribute *da,
-    char *buf)
+			    char *buf)
 {
-    return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_VCC_INT, buf);
+	return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_VCC_INT, buf);
 }
 static DEVICE_ATTR_RO(vcc_int);
 
 static ssize_t vcc_aux_show(struct device *dev, struct device_attribute *da,
-    char *buf)
+			    char *buf)
 {
-    return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_VCC_AUX, buf);
+	return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_VCC_AUX, buf);
 }
 static DEVICE_ATTR_RO(vcc_aux);
 
 static ssize_t vcc_bram_show(struct device *dev, struct device_attribute *da,
-    char *buf)
+			     char *buf)
 {
-    return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_VCC_BRAM, buf);
+	return show_sysmon(to_platform_device(dev), XOCL_SYSMON_PROP_VCC_BRAM, buf);
 }
 static DEVICE_ATTR_RO(vcc_bram);
 
@@ -323,9 +325,8 @@ static int sysmon_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, sysmon);
 
 	err = mgmt_sysfs_create_sysmon(pdev);
-	if (err) {
+	if (err)
 		goto create_sysmon_failed;
-	}
 
 	xocl_subdev_register(pdev, XOCL_SUBDEV_SYSMON, &sysmon_ops);
 

@@ -12,67 +12,67 @@
 #define MB(x)   ((unsigned int) (x) << 20)
 
 enum PFO_BARS {
-  USER_BAR = 0,
-  DMA_BAR,
-  MAX_BAR
+	USER_BAR = 0,
+	DMA_BAR,
+	MAX_BAR
 };
 
 /**
  * Peripherals on AXI-Lite mapped to PCIe BAR
  */
 
-#define XILINX_VENDOR_ID 	0x10EE
-#define OCL_CU_CTRL_RANGE      	KB(4)
+#define XILINX_VENDOR_ID	0x10EE
+#define OCL_CU_CTRL_RANGE	KB(4)
 
-#define DDR_BUFFER_ALIGNMENT   	0x40
-#define MMAP_SIZE_USER         	MB(32)
+#define DDR_BUFFER_ALIGNMENT	0x40
+#define MMAP_SIZE_USER		MB(32)
 
 //parameters for HWICAP, Flash and APM on PCIe BAR
-#define HWICAP_OFFSET           0x020000
-#define AXI_GATE_OFFSET         0x030000
-#define AXI_GATE_OFFSET_READ    0x030008
-#define BPI_FLASH_OFFSET        0x040000
+#define HWICAP_OFFSET		0x020000
+#define AXI_GATE_OFFSET		0x030000
+#define AXI_GATE_OFFSET_READ	0x030008
+#define BPI_FLASH_OFFSET	0x040000
 
 //Base addresses for LAPC
-#define LAPC0_BASE            0x00120000  //ocl master00
-#define LAPC1_BASE            0x00121000  //ocl master01
-#define LAPC2_BASE            0x00122000  //ocl master02
-#define LAPC3_BASE            0x00123000  //ocl master03
+#define LAPC0_BASE	      0x00120000  //ocl master00
+#define LAPC1_BASE	      0x00121000  //ocl master01
+#define LAPC2_BASE	      0x00122000  //ocl master02
+#define LAPC3_BASE	      0x00123000  //ocl master03
 
 //Following status registers are available at each base
-#define LAPC_OVERALL_STATUS_OFFSET        0x0
-#define LAPC_CUMULATIVE_STATUS_0_OFFSET   0x100
-#define LAPC_CUMULATIVE_STATUS_1_OFFSET   0x104
-#define LAPC_CUMULATIVE_STATUS_2_OFFSET   0x108
-#define LAPC_CUMULATIVE_STATUS_3_OFFSET   0x10c
+#define LAPC_OVERALL_STATUS_OFFSET	  0x0
+#define LAPC_CUMULATIVE_STATUS_0_OFFSET	  0x100
+#define LAPC_CUMULATIVE_STATUS_1_OFFSET	  0x104
+#define LAPC_CUMULATIVE_STATUS_2_OFFSET	  0x108
+#define LAPC_CUMULATIVE_STATUS_3_OFFSET	  0x10c
 
-#define LAPC_SNAPSHOT_STATUS_0_OFFSET     0x200
-#define LAPC_SNAPSHOT_STATUS_1_OFFSET     0x204
-#define LAPC_SNAPSHOT_STATUS_2_OFFSET     0x208
-#define LAPC_SNAPSHOT_STATUS_3_OFFSET     0x20c
+#define LAPC_SNAPSHOT_STATUS_0_OFFSET	  0x200
+#define LAPC_SNAPSHOT_STATUS_1_OFFSET	  0x204
+#define LAPC_SNAPSHOT_STATUS_2_OFFSET	  0x208
+#define LAPC_SNAPSHOT_STATUS_3_OFFSET	  0x20c
 
 // NOTE: monitor address offset now defined by PERFMON0_BASE
-#define PERFMON0_OFFSET         0x0
-#define PERFMON1_OFFSET         0x020000
-#define PERFMON2_OFFSET         0x010000
+#define PERFMON0_OFFSET		0x0
+#define PERFMON1_OFFSET		0x020000
+#define PERFMON2_OFFSET		0x010000
 
 #define PERFMON_START_OFFSET	0x2000
 #define PERFMON_RANGE			0x1000
 
-#define FEATURE_ROM_BASE           0x0B0000
-#define OCL_CTLR_BASE              0x000000
-#define HWICAP_BASE                0x020000
-#define AXI_GATE_BASE              0x030000
-#define AXI_GATE_BASE_RD_BASE      0x030008
-#define FEATURE_ID_BASE            0x031000
-#define GENERAL_STATUS_BASE        0x032000
-#define AXI_I2C_BASE               0x041000
-#define PERFMON0_BASE              0x100000
-#define PERFMON0_BASE2             0x1800000
-#define OCL_CLKWIZ0_BASE           0x050000
-#define OCL_CLKWIZ1_BASE           0x051000
+#define FEATURE_ROM_BASE	   0x0B0000
+#define OCL_CTLR_BASE		   0x000000
+#define HWICAP_BASE		   0x020000
+#define AXI_GATE_BASE		   0x030000
+#define AXI_GATE_BASE_RD_BASE	   0x030008
+#define FEATURE_ID_BASE		   0x031000
+#define GENERAL_STATUS_BASE	   0x032000
+#define AXI_I2C_BASE		   0x041000
+#define PERFMON0_BASE		   0x100000
+#define PERFMON0_BASE2		   0x1800000
+#define OCL_CLKWIZ0_BASE	   0x050000
+#define OCL_CLKWIZ1_BASE	   0x051000
 /* Only needed for workaround for 5.0 platforms */
-#define GPIO_NULL_BASE             0x1FFF000
+#define GPIO_NULL_BASE		   0x1FFF000
 
 
 #define OCL_CLKWIZ_STATUS_OFFSET      0x4
@@ -85,23 +85,23 @@ enum PFO_BARS {
 #define FIREWALL_USER_CONTROL_BASE	0xE0000
 #define FIREWALL_DATAPATH_BASE		0xF0000
 
-#define AF_MI_FAULT_STATUS_OFFSET     	       0x0	//MI Fault Status Register
+#define AF_MI_FAULT_STATUS_OFFSET	       0x0	//MI Fault Status Register
 #define AF_MI_SOFT_CTRL_OFFSET		       0x4	//MI Soft Fault Control Register
 #define AF_UNBLOCK_CTRL_OFFSET		       0x8	//MI Unblock Control Register
 
 // Currently un-used regs from the Firewall IP.
 #define AF_MAX_CONTINUOUS_RTRANSFERS_WAITS     0x30	//MAX_CONTINUOUS_RTRANSFERS_WAITS
-#define AF_MAX_WRITE_TO_BVALID_WAITS           0x34	//MAX_WRITE_TO_BVALID_WAITS
-#define AF_MAX_ARREADY_WAITS                   0x38	//MAX_ARREADY_WAITS
-#define AF_MAX_AWREADY_WAITS                   0x3c	//MAX_AWREADY_WAITS
-#define AF_MAX_WREADY_WAITS                    0x40	//MAX_WREADY_WAITS
+#define AF_MAX_WRITE_TO_BVALID_WAITS	       0x34	//MAX_WRITE_TO_BVALID_WAITS
+#define AF_MAX_ARREADY_WAITS		       0x38	//MAX_ARREADY_WAITS
+#define AF_MAX_AWREADY_WAITS		       0x3c	//MAX_AWREADY_WAITS
+#define AF_MAX_WREADY_WAITS		       0x40	//MAX_WREADY_WAITS
 
 /**
  * DDR Zero IP Register definition
  */
 //#define ENABLE_DDR_ZERO_IP
-#define DDR_ZERO_BASE	           	0x0B0000
-#define DDR_ZERO_CONFIG_REG_OFFSET 	0x10
+#define DDR_ZERO_BASE			0x0B0000
+#define DDR_ZERO_CONFIG_REG_OFFSET	0x10
 #define DDR_ZERO_CTRL_REG_OFFSET	0x0
 
 
@@ -109,10 +109,10 @@ enum PFO_BARS {
  * SYSMON Register definition
  */
 #define SYSMON_BASE		0x0A0000
-#define SYSMON_TEMP 		0x400 		// TEMPOERATURE REGISTER ADDRESS
-#define SYSMON_VCCINT		0x404 		// VCCINT REGISTER OFFSET
-#define SYSMON_VCCAUX		0x408 		// VCCAUX REGISTER OFFSET
-#define SYSMON_VCCBRAM		0x418 		// VCCBRAM REGISTER OFFSET
+#define SYSMON_TEMP		0x400		// TEMPOERATURE REGISTER ADDRESS
+#define SYSMON_VCCINT		0x404		// VCCINT REGISTER OFFSET
+#define SYSMON_VCCAUX		0x408		// VCCAUX REGISTER OFFSET
+#define SYSMON_VCCBRAM		0x418		// VCCBRAM REGISTER OFFSET
 #define	SYSMON_TEMP_MAX		0x480
 #define	SYSMON_VCCINT_MAX	0x484
 #define	SYSMON_VCCAUX_MAX	0x488
@@ -132,34 +132,21 @@ enum PFO_BARS {
  * ICAP Register definition
  */
 
-#define XHWICAP_GIER            (HWICAP_BASE+0x1c)
-#define XHWICAP_ISR             (HWICAP_BASE+0x20)
-#define XHWICAP_IER             (HWICAP_BASE+0x28)
-#define XHWICAP_WF              (HWICAP_BASE+0x100)
-#define XHWICAP_RF              (HWICAP_BASE+0x104)
-#define XHWICAP_SZ              (HWICAP_BASE+0x108)
-#define XHWICAP_CR              (HWICAP_BASE+0x10c)
-#define XHWICAP_SR              (HWICAP_BASE+0x110)
-#define XHWICAP_WFV             (HWICAP_BASE+0x114)
-#define XHWICAP_RFO             (HWICAP_BASE+0x118)
-#define XHWICAP_ASR             (HWICAP_BASE+0x11c)
-
-/**
- * Bitstream header information.
- */
-typedef struct {
-  unsigned int HeaderLength;     /* Length of header in 32 bit words */
-  unsigned int BitstreamLength;  /* Length of bitstream to read in bytes*/
-  unsigned char *DesignName;     /* Design name read from bitstream header */
-  unsigned char *PartName;       /* Part name read from bitstream header */
-  unsigned char *Date;           /* Date read from bitstream header */
-  unsigned char *Time;           /* Bitstream creation time read from header */
-  unsigned int MagicLength;      /* Length of the magic numbers in header */
-} XHwIcap_Bit_Header;
+#define XHWICAP_GIER		(HWICAP_BASE+0x1c)
+#define XHWICAP_ISR		(HWICAP_BASE+0x20)
+#define XHWICAP_IER		(HWICAP_BASE+0x28)
+#define XHWICAP_WF		(HWICAP_BASE+0x100)
+#define XHWICAP_RF		(HWICAP_BASE+0x104)
+#define XHWICAP_SZ		(HWICAP_BASE+0x108)
+#define XHWICAP_CR		(HWICAP_BASE+0x10c)
+#define XHWICAP_SR		(HWICAP_BASE+0x110)
+#define XHWICAP_WFV		(HWICAP_BASE+0x114)
+#define XHWICAP_RFO		(HWICAP_BASE+0x118)
+#define XHWICAP_ASR		(HWICAP_BASE+0x11c)
 
 /* Used for parsing bitstream header */
-#define XHI_EVEN_MAGIC_BYTE     0x0f
-#define XHI_ODD_MAGIC_BYTE      0xf0
+#define XHI_EVEN_MAGIC_BYTE	0x0f
+#define XHI_ODD_MAGIC_BYTE	0xf0
 
 /* Extra mode for IDLE */
 #define XHI_OP_IDLE  -1
@@ -167,7 +154,7 @@ typedef struct {
 #define XHI_BIT_HEADER_FAILURE -1
 
 /* The imaginary module length register */
-#define XHI_MLR                  15
+#define XHI_MLR			 15
 
 #define DMA_HWICAP_BITFILE_BUFFER_SIZE 1024
 
@@ -179,17 +166,17 @@ typedef struct {
  */
 
 #define START_ADDR_HI_CMD   0x53420000
-#define START_ADDR_CMD      0x53410000
-#define END_ADDR_CMD        0x45000000
-#define END_ADDR_HI_CMD     0x45420000
-#define UNLOCK_CMD          0x556E6C6B
-#define ERASE_CMD           0x45726173
-#define PROGRAM_CMD         0x50726F67
-#define VERSION_CMD         0x55726F73
+#define START_ADDR_CMD	    0x53410000
+#define END_ADDR_CMD	    0x45000000
+#define END_ADDR_HI_CMD	    0x45420000
+#define UNLOCK_CMD	    0x556E6C6B
+#define ERASE_CMD	    0x45726173
+#define PROGRAM_CMD	    0x50726F67
+#define VERSION_CMD	    0x55726F73
 
-#define READY_STAT          0x00008000
-#define ERASE_STAT          0x00000000
-#define PROGRAM_STAT        0x00000080
+#define READY_STAT	    0x00008000
+#define ERASE_STAT	    0x00000000
+#define PROGRAM_STAT	    0x00000080
 
 /*
  * Booting FPGA from PROM
@@ -197,14 +184,14 @@ typedef struct {
  * Table 7.1
  */
 
-#define DUMMY_WORD         0xFFFFFFFF
-#define SYNC_WORD          0xAA995566
-#define TYPE1_NOOP         0x20000000
+#define DUMMY_WORD	   0xFFFFFFFF
+#define SYNC_WORD	   0xAA995566
+#define TYPE1_NOOP	   0x20000000
 #define TYPE1_WRITE_WBSTAR 0x30020001
-#define WBSTAR_ADD10       0x00000000
-#define WBSTAR_ADD11       0x01000000
-#define TYPE1_WRITE_CMD    0x30008001
-#define IPROG_CMD          0x0000000F
+#define WBSTAR_ADD10	   0x00000000
+#define WBSTAR_ADD11	   0x01000000
+#define TYPE1_WRITE_CMD	   0x30008001
+#define IPROG_CMD	   0x0000000F
 
 /*
  * MicroBlaze definition
@@ -246,12 +233,12 @@ typedef struct {
 /*
  * Interrupt controls
  */
-#define XCLMGMT_MAX_INTR_NUM            32
-#define XCLMGMT_MAX_USER_INTR           16
-#define XCLMGMT_INTR_CTRL_BASE          (0x2000UL)
-#define XCLMGMT_INTR_USER_ENABLE        (XCLMGMT_INTR_CTRL_BASE + 0x08)
-#define XCLMGMT_INTR_USER_DISABLE       (XCLMGMT_INTR_CTRL_BASE + 0x0C)
-#define XCLMGMT_INTR_USER_VECTOR        (XCLMGMT_INTR_CTRL_BASE + 0x80)
-#define XCLMGMT_MAILBOX_INTR            11
+#define XCLMGMT_MAX_INTR_NUM		32
+#define XCLMGMT_MAX_USER_INTR		16
+#define XCLMGMT_INTR_CTRL_BASE		(0x2000UL)
+#define XCLMGMT_INTR_USER_ENABLE	(XCLMGMT_INTR_CTRL_BASE + 0x08)
+#define XCLMGMT_INTR_USER_DISABLE	(XCLMGMT_INTR_CTRL_BASE + 0x0C)
+#define XCLMGMT_INTR_USER_VECTOR	(XCLMGMT_INTR_CTRL_BASE + 0x80)
+#define XCLMGMT_MAILBOX_INTR		11
 
 #endif

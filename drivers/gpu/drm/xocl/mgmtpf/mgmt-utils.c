@@ -1,18 +1,11 @@
-/**
- *  Copyright (C) 2017 Xilinx, Inc. All rights reserved.
+// SPDX-License-Identifier: GPL-2.0
+
+/*
+ *  Copyright (C) 2017-2019 Xilinx, Inc. All rights reserved.
  *
  *  Utility Functions for sysmon, axi firewall and other peripherals.
  *  Author: Umang Parekh
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
  */
 
 #include "mgmt-core.h"
@@ -36,10 +29,9 @@ static struct pci_dev *find_aer_cap(struct pci_dev *bridge)
 	 * Walk the hierarchy up to the root port
 	 **/
 	do {
-		printk(KERN_DEBUG "%s: inside do while loop..find_aer_cap \n", DRV_NAME);
 		cap = pci_find_ext_capability(bridge, PCI_EXT_CAP_ID_ERR);
 		if (cap) {
-			printk(KERN_DEBUG "%s: AER capability found. \n", DRV_NAME);
+			printk(KERN_DEBUG "%s: AER capability found.\n", DRV_NAME);
 			return bridge;
 		}
 
@@ -47,7 +39,7 @@ static struct pci_dev *find_aer_cap(struct pci_dev *bridge)
 		bridge = bridge->bus->self;
 
 		if (!bridge || prev_bridge == bridge) {
-			printk(KERN_DEBUG "%s: AER capability not found. Ignoring boot command. \n", DRV_NAME);
+			printk(KERN_DEBUG "%s: AER capability not found. Ignoring boot command.\n", DRV_NAME);
 			return NULL;
 		}
 
@@ -65,7 +57,7 @@ static int pcie_mask_surprise_down(struct pci_dev *pdev, u32 *orig_mask)
 	int cap;
 	u32 mask;
 
-	printk(KERN_INFO "%s: pcie_mask_surprise_down \n", DRV_NAME);
+	printk(KERN_INFO "%s: pcie_mask_surprise_down\n", DRV_NAME);
 
 	bridge = find_aer_cap(bridge);
 	if (bridge) {
@@ -79,7 +71,7 @@ static int pcie_mask_surprise_down(struct pci_dev *pdev, u32 *orig_mask)
 		}
 	}
 
-	return -ENOSYS;
+	return -ENODEV;
 }
 
 static int pcie_unmask_surprise_down(struct pci_dev *pdev, u32 orig_mask)
@@ -87,7 +79,7 @@ static int pcie_unmask_surprise_down(struct pci_dev *pdev, u32 orig_mask)
 	struct pci_dev *bridge = pdev->bus->self;
 	int cap;
 
-	printk(KERN_DEBUG "%s: pcie_unmask_surprise_down \n", DRV_NAME);
+	printk(KERN_DEBUG "%s: pcie_unmask_surprise_down\n", DRV_NAME);
 
 	bridge = find_aer_cap(bridge);
 	if (bridge) {
@@ -98,7 +90,7 @@ static int pcie_unmask_surprise_down(struct pci_dev *pdev, u32 orig_mask)
 		}
 	}
 
-	return -ENOSYS;
+	return -ENODEV;
 }
 
 /**
@@ -218,8 +210,7 @@ long reset_hot_ioctl(struct xclmgmt_dev *lro)
 		xocl_af_check(lro, NULL));
 
 	if (retry >= XCLMGMT_RESET_MAX_RETRY) {
-		mgmt_err(lro, "Board is not able to recover by PCI Hot reset. "
-			"Please warm reboot");
+		mgmt_err(lro, "Board is not able to recover by PCI Hot reset, please warm reboot");
 		return -EIO;
 	}
 
@@ -302,7 +293,7 @@ int pci_fundamental_reset(struct xclmgmt_dev *lro)
 	 * lock pci config space access from userspace,
 	 * save state and issue PCIe fundamental reset
 	 */
-	printk(KERN_INFO "%s: pci_fundamental_reset \n", DRV_NAME);
+	mgmt_info(lro, "%s\n", __func__);
 
 	// Save pci config space for botht the pf's
 	xocl_pci_save_config_all(pci_dev);
@@ -310,7 +301,6 @@ int pci_fundamental_reset(struct xclmgmt_dev *lro)
 	rc = pcie_mask_surprise_down(pci_dev, &orig_mask);
 	if (rc)
 		goto done;
-	printk(KERN_INFO "%s: pci_fundamental_reset 1\n", DRV_NAME);
 
 #if defined(__PPC64__)
 	/*
@@ -332,7 +322,6 @@ int pci_fundamental_reset(struct xclmgmt_dev *lro)
 	if (rc)
 		goto done;
 
-	printk(KERN_INFO "%s: pci_fundamental_reset 2\n", DRV_NAME);
 	/* Now perform secondary bus reset which should reset most of the device */
 	pci_read_config_byte(pci_dev->bus->self, PCI_MIN_GNT, &hot);
 	/* Toggle the PCIe hot reset bit in the root port */
@@ -342,8 +331,6 @@ int pci_fundamental_reset(struct xclmgmt_dev *lro)
 	msleep(500);
 #endif
 done:
-	printk(KERN_INFO "%s: pci_fundamental_reset done routine\n", DRV_NAME);
-
 	// restore pci config space for botht the pf's
 	rc = pcie_unmask_surprise_down(pci_dev, orig_mask);
 	xocl_pci_restore_config_all(pci_dev);
@@ -354,10 +341,10 @@ done:
 	return rc;
 }
 
-unsigned compute_unit_busy(struct xclmgmt_dev *lro)
+unsigned int compute_unit_busy(struct xclmgmt_dev *lro)
 {
 	int i = 0;
-	unsigned result = 0;
+	unsigned int result = 0;
 	u32 r = MGMT_READ_REG32(lro, AXI_GATE_BASE_RD_BASE);
 
 	/*

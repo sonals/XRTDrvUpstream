@@ -29,7 +29,8 @@ int xocl_info_ioctl(struct drm_device *dev, void *data, struct drm_file *filp)
 
 	userpf_info(xdev, "INFO IOCTL");
 
-	sscanf(XRT_DRIVER_VERSION, "%d.%d.%d", &major, &minor, &patch);
+	if (sscanf(XRT_DRIVER_VERSION, "%d.%d.%d", &major, &minor, &patch) != 3)
+		return -ENODEV;
 
 	obj->vendor = pdev->vendor;
 	obj->device = pdev->device;
@@ -379,7 +380,7 @@ int xocl_hot_reset_ioctl(struct drm_device *dev, void *data,
 
 	int err = xocl_hot_reset(xdev, false);
 
-	printk(KERN_INFO "%s err: %d\n", __func__, err);
+	userpf_info(xdev, "%s err: %d\n", __func__, err);
 	return err;
 }
 
@@ -390,6 +391,6 @@ int xocl_reclock_ioctl(struct drm_device *dev, void *data,
 	struct xocl_dev *xdev = drm_p->xdev;
 	int err = xocl_reclock(xdev, data);
 
-	printk(KERN_INFO "%s err: %d\n", __func__, err);
+	userpf_info(xdev, "%s err: %d\n", __func__, err);
 	return err;
 }

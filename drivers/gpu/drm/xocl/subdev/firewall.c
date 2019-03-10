@@ -1,23 +1,17 @@
-/**
+// SPDX-License-Identifier: GPL-2.0
+
+/*
  *  Copyright (C) 2017-2019 Xilinx, Inc. All rights reserved.
  *
  *  Utility Functions for AXI firewall IP.
  *  Author: Lizhi.Hou@Xilinx.com
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
  */
 
 #include <linux/pci.h>
 #include <linux/platform_device.h>
 #include <linux/hwmon-sysfs.h>
+#include <linux/ktime.h>
 #include <linux/rtc.h>
 #include "../xocl_drv.h"
 
@@ -36,9 +30,6 @@
 #define RECS_WREADY_MAX_WAIT                      BIT(18)
 #define RECS_WRITE_TO_BVALID_MAX_WAIT             BIT(19)
 #define ERRS_BRESP                                BIT(20)
-
-// Get the timezone info from the linux kernel
-extern struct timezone sys_tz;
 
 #define	FIREWALL_STATUS_BUSY	(READ_RESPONSE_BUSY | WRITE_RESPONSE_BUSY)
 #define	CLEAR_RESET_GPIO		0
@@ -130,9 +121,8 @@ static ssize_t show_firewall(struct device *dev, struct device_attribute *da,
 	}
 
 	ret = get_prop(pdev, attr->index, &val);
-	if (ret) {
+	if (ret)
 		return 0;
-	}
 
 	return sprintf(buf, "%u\n", val);
 }
@@ -154,9 +144,8 @@ static ssize_t clear_store(struct device *dev, struct device_attribute *da,
 	struct platform_device *pdev = to_platform_device(dev);
 	u32 val = 0;
 
-	if (kstrtou32(buf, 10, &val) == -EINVAL || val != 1) {
+	if (kstrtou32(buf, 10, &val) == -EINVAL || val != 1)
 		return -EINVAL;
-	}
 
 	clear_firewall(pdev);
 
@@ -204,13 +193,11 @@ static u32 check_firewall(struct platform_device *pdev, int *level)
 		val = IS_FIRED(fw, i);
 		if (val) {
 			xocl_info(&pdev->dev, "AXI Firewall %d tripped, "
-				"status: 0x%x", i, val);
+				  "status: 0x%x", i, val);
 			if (!fw->curr_status) {
 				fw->err_detected_status = val;
 				fw->err_detected_level = i;
 				ktime_get_ts64(&now);
-// PORT4_20
-//				do_gettimeofday(&time);
 				fw->err_detected_time = (u64)(now.tv_sec -
 					(sys_tz.tz_minuteswest * 60));
 			}

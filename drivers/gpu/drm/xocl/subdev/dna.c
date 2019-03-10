@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
@@ -5,14 +7,6 @@
  *
  * Authors: Chien-Wei Lan <chienwei@xilinx.com>
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 #include <linux/hwmon.h>
@@ -128,6 +122,7 @@ static uint32_t dna_status(struct platform_device *pdev)
 	uint32_t status = 0;
 	uint8_t retries = 10;
 	bool rsa4096done = false;
+
 	if (!xlnx_dna)
 		return status;
 
@@ -171,6 +166,7 @@ static void dna_write_cert(struct platform_device *pdev, const uint32_t *cert, u
 	bool sha256done = false;
 	uint32_t convert;
 	uint32_t sign_start, message_words = (len-512)>>2;
+
 	sign_start = message_words;
 
 	if (!xlnx_dna)
@@ -195,7 +191,8 @@ static void dna_write_cert(struct platform_device *pdev, const uint32_t *cert, u
 			retries--;
 		}
 		for (j = 0; j < 16; ++j) {
-			convert = (*(cert+i+j) >> 24 & 0xff) | (*(cert+i+j) >> 8 & 0xff00) | (*(cert+i+j) << 8 & 0xff0000) | ((*(cert+i+j) & 0xff) << 24);
+			convert = (*(cert+i+j) >> 24 & 0xff) | (*(cert+i+j) >> 8 & 0xff00) |
+				(*(cert+i+j) << 8 & 0xff0000) | ((*(cert+i+j) & 0xff) << 24);
 			iowrite32(convert, xlnx_dna->base+XLNX_DNA_DATA_AXI_ONLY_REGISTER_OFFSET+j*4);
 		}
 	}
@@ -218,7 +215,8 @@ static void dna_write_cert(struct platform_device *pdev, const uint32_t *cert, u
 	for (k = 0; k < 128; k += 16) {
 		for (i = 0; i < 16; i++) {
 			j = k+i+sign_start;
-			convert = (*(cert + j) >> 24 & 0xff) | (*(cert + j) >> 8 & 0xff00) | (*(cert + j) << 8 & 0xff0000) | ((*(cert + j) & 0xff) << 24);
+			convert = (*(cert + j) >> 24 & 0xff) | (*(cert + j) >> 8 & 0xff00) |
+				(*(cert + j) << 8 & 0xff0000) | ((*(cert + j) & 0xff) << 24);
 			iowrite32(convert, xlnx_dna->base+XLNX_DNA_CERTIFICATE_DATA_AXI_ONLY_REGISTER_OFFSET + i * 4);
 		}
 	}
@@ -226,8 +224,6 @@ static void dna_write_cert(struct platform_device *pdev, const uint32_t *cert, u
 	status = ioread32(xlnx_dna->base+XLNX_DNA_STATUS_REGISTER_OFFSET);
 	words  = ioread32(xlnx_dna->base+XLNX_DNA_FSM_CERTIFICATE_WORD_WRITE_COUNT_REGISTER_OFFSET);
 	xocl_info(&pdev->dev, "Signature: status %08x certificate words %d", status, words);
-
-	return;
 }
 
 static struct xocl_dna_funcs dna_ops = {
@@ -300,9 +296,9 @@ static int xlnx_dna_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, xlnx_dna);
 
 	err = mgmt_sysfs_create_xlnx_dna(pdev);
-	if (err) {
+	if (err)
 		goto create_xlnx_dna_failed;
-	}
+
 	xocl_subdev_register(pdev, XOCL_SUBDEV_DNA, &dna_ops);
 
 	return 0;

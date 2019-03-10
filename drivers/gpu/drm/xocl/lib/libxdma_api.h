@@ -1,40 +1,10 @@
-/**
- * Copyright (C) 2016-2017 Xilinx, Inc
+/* SPDX-License-Identifier: GPL-2.0 */
+
+/*
+ * Copyright (C) 2016-2019 Xilinx, Inc
  *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may
- * not use this file except in compliance with the License. A copy of the
- * License is located at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
  */
 
-/*******************************************************************************
- *
- * Xilinx XDMA IP Core Linux Driver
- * Copyright(c) 2015 - 2017 Xilinx, Inc.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * The full GNU General Public License is included in this distribution in
- * the file called "LICENSE".
- *
- ******************************************************************************/
 #ifndef __XDMA_BASE_API_H__
 #define __XDMA_BASE_API_H__
 
@@ -45,24 +15,6 @@
 /*
  * functions exported by the xdma driver
  */
-
-typedef struct {
-	u64 write_submitted;
-	u64 write_completed;
-	u64 read_requested;
-	u64 read_completed;
-	u64 restart;
-	u64 open;
-	u64 close;
-	u64 msix_trigger;
-} xdma_statistics;
-
-/*
- * This struct should be constantly updated by XMDA using u64_stats_* APIs
- * The front end will read the structure without locking (That's why updating atomically is a must)
- * every time it prints the statistics.
- */
-//static XDMA_Statistics stats;
 
 /*
  * xdma_device_open - read the pci bars and configure the fpga
@@ -165,17 +117,11 @@ void xdma_device_offline(struct pci_dev *pdev, void *dev_hndl);
  * xdma_get_userio - get user bar information
  */
 int xdma_get_userio(void *dev_hndl, void * __iomem *base_addr,
-	u64 *len, u32 *bar_idx);
+		    u64 *len, u32 *bar_idx);
 
 /*
  * xdma_get_bypassio - get bypass bar information
  */
 int xdma_get_bypassio(void *dev_hndl, u64 *len, u32 *bar_idx);
-/////////////////////missing API////////////////////
-
-//xdma_get_channle_state - if no interrupt on DMA hang is available
-//xdma_channle_restart
 
 #endif
-
-

@@ -1,5 +1,9 @@
+#
+# Xilinx Alveo and FaaS platform drivers
+#
+
 config DRM_XOCL
-	tristate "DRM Support for Xilinx PCIe Accelerator Alveo"
+	tristate "DRM Support for Xilinx PCIe Accelerator Alveo and FaaS platforms"
 	depends on DRM
 	depends on PCI
 	default n
@@ -9,7 +13,7 @@ config DRM_XOCL
 
 
 config DRM_XMGMT
-	tristate "DRM Support for Xilinx PCIe Accelerator Alveo"
+	tristate "DRM Support for Xilinx PCIe Accelerator Alveo and FaaS platforms"
 	depends on PCI
 	depends on FPGA
 	default n

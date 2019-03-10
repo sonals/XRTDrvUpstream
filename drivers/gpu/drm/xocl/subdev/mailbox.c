@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0
+
 /*
  * A GEM style device manager for PCIe based OpenCL accelerators.
  *
@@ -161,9 +163,9 @@ MODULE_PARM_DESC(mailbox_no_intr,
 #define MAX_MSG_QUEUE_LEN 5
 
 #define MB_CONN_INIT	(0x1<<0)
-#define MB_CONN_SYN 	(0x1<<1)
-#define MB_CONN_ACK 	(0x1<<2)
-#define MB_CONN_FIN 	(0x1<<3)
+#define MB_CONN_SYN	(0x1<<1)
+#define MB_CONN_ACK	(0x1<<2)
+#define MB_CONN_FIN	(0x1<<3)
 
 /*
  * Mailbox IP register layout
@@ -320,7 +322,7 @@ struct mailbox {
 
 static inline const char *reg2name(struct mailbox *mbx, u32 *reg)
 {
-	const char *reg_names[] = {
+	static const char *reg_names[] = {
 		"wrdata",
 		"reserved1",
 		"rddata",
@@ -339,7 +341,7 @@ static inline const char *reg2name(struct mailbox *mbx, u32 *reg)
 		(uintptr_t)mbx->mbx_regs) / sizeof(u32)];
 }
 
-struct mailbox_conn{
+struct mailbox_conn {
 	uint64_t flag;
 	void *kaddr;
 	phys_addr_t paddr;
@@ -348,9 +350,9 @@ struct mailbox_conn{
 	uint64_t sec_id;
 };
 
-int mailbox_request(struct platform_device *, void *, size_t,
-	void *, size_t *, mailbox_msg_cb_t, void *);
-int mailbox_post(struct platform_device *, u64, void *, size_t);
+int mailbox_request(struct platform_device *pdev, void *req, size_t reqlen,
+		    void *resp, size_t *resplen, mailbox_msg_cb_t cb, void *cbarg);
+int mailbox_post(struct platform_device *pdev, u64 reqid, void *buf, size_t len);
 static int mailbox_connect_status(struct platform_device *pdev);
 static void connect_state_handler(struct mailbox *mbx, struct mailbox_conn *conn);
 
@@ -423,15 +425,9 @@ irqreturn_t mailbox_isr(int irq, void *arg)
 	return IRQ_HANDLED;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-static void chan_timer(unsigned long data)
-{
-	struct mailbox_channel *ch = (struct mailbox_channel *)data;
-#else
 static void chan_timer(struct timer_list *t)
 {
 	struct mailbox_channel *ch = from_timer(ch, t, mbc_timer);
-#endif
 
 	MBX_DBG(ch->mbc_parent, "%s tick", ch->mbc_name);
 
@@ -504,7 +500,7 @@ static void msg_done(struct mailbox_msg *msg, int err)
 			mutex_unlock(&ch->mbc_parent->mbx_lock);
 
 			complete(&ch->mbc_parent->mbx_comp);
-		} else{
+		} else {
 			complete(&msg->mbm_complete);
 		}
 	}
@@ -716,11 +712,7 @@ static int chan_init(struct mailbox *mbx, char *nm,
 	queue_work(ch->mbc_wq, &ch->mbc_work);
 
 	/* One timer for one channel. */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
-	setup_timer(&ch->mbc_timer, chan_timer, (unsigned long)ch);
-#else
 	timer_setup(&ch->mbc_timer, chan_timer, 0);
-#endif
 
 	return 0;
 }
@@ -1482,8 +1474,7 @@ static void connect_state_handler(struct mailbox *mbx, struct mailbox_conn *conn
 			/* clean up all cached data, */
 			mbx->mbx_paired = 0;
 			mbx->mbx_established = false;
-			if (mbx->mbx_kaddr)
-				kfree(mbx->mbx_kaddr);
+			kfree(mbx->mbx_kaddr);
 
 			mbx->mbx_kaddr = kzalloc(PAGE_SIZE, GFP_KERNEL);
 			get_random_bytes(mbx->mbx_kaddr, PAGE_SIZE);
@@ -1520,10 +1511,8 @@ static void connect_state_handler(struct mailbox *mbx, struct mailbox_conn *conn
 		case MB_CONN_FIN:
 			mbx->mbx_paired = 0;
 			mbx->mbx_established = false;
-			if (mbx->mbx_kaddr) {
-				kfree(mbx->mbx_kaddr);
-				mbx->mbx_kaddr = NULL;
-			}
+			kfree(mbx->mbx_kaddr);
+			mbx->mbx_kaddr = NULL;
 			mbx->mbx_state = CONN_START;
 			break;
 		default:
@@ -1554,11 +1543,11 @@ static void process_request(struct mailbox *mbx, struct mailbox_msg *msg)
 			MBX_INFO(mbx, "%s", sendstr);
 			rc = mailbox_post(mbx->mbx_pdev, msg->mbm_req_id,
 				mbx->mbx_tst_tx_msg, mbx->mbx_tst_tx_msg_len);
-			if (rc) {
+			if (rc)
 				MBX_ERR(mbx, "%s failed: %d", sendstr, rc);
-			} else {
+			else
 				mbx->mbx_tst_tx_msg_len = 0;
-			}
+
 		}
 	} else if (req->req == MAILBOX_REQ_TEST_READY) {
 		MBX_INFO(mbx, "%s: %d", recvstr, req->req);
