@@ -1622,6 +1622,10 @@ int mailbox_listen(struct platform_device *pdev,
 	struct mailbox *mbx = platform_get_drvdata(pdev);
 
 	mbx->mbx_listen_cb_arg = cbarg;
+	/* mbx->mbx_listen_cb is used in another thread as a condition to
+	 * call the function. Ensuring that the argument is captured before
+	 * the function pointer
+	 */
 	wmb();
 	mbx->mbx_listen_cb = cb;
 

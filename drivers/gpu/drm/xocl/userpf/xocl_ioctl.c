@@ -369,7 +369,7 @@ uint get_live_client_size(struct xocl_dev *xdev)
 void reset_notify_client_ctx(struct xocl_dev *xdev)
 {
 	xdev->needs_reset = false;
-	wmb();
+//	wmb();
 }
 
 int xocl_hot_reset_ioctl(struct drm_device *dev, void *data,
